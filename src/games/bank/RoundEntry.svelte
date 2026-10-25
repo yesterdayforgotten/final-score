@@ -2,6 +2,8 @@
   import Avatar from '../../components/Avatar.svelte';
   import Dice from '../../components/Dice.svelte';
   import Icon from '../../components/Icon.svelte';
+  import Sheet from '../../components/Sheet.svelte';
+  import { haptics } from '../../lib/haptics';
   import type { RoundEntryProps } from '../types';
   import { bankState, rollerSeat, rollFromDice, rollLabel, SAFE_ROLLS, type BankEntry, type BankOptions, type Roll } from './rules';
 
@@ -72,13 +74,15 @@
     round.data.rolls = [...rolls, r];
     const after = bankState(round.data.rolls);
     showFlash(r, rolls.length, after.bank, after.sevened);
-    navigator.vibrate?.(10);
+    if (after.sevened) haptics.bust();
+    else if (r.doubles) haptics.doubles();
+    else if (rolls.length < SAFE_ROLLS && r.sum === 7) haptics.bonus();
+    else haptics.land();
     if (after.sevened) {
       for (const p of players) {
         const e = round.entries[p.id];
         if (e.banked === null) e.busted = true;
       }
-      navigator.vibrate?.([30, 60, 30]);
     }
     changed();
   }
@@ -99,21 +103,32 @@
     changed();
   }
 
-  function toggleBank(e: BankEntry) {
-    if (st.sevened) return;
+  // Undoing a bank asks first, so a stray tap can't cost anyone points.
+  let undoing = $state<string | null>(null);
+
+  function toggleBank(pid: string) {
+    const e = round.entries[pid];
     if (e.banked !== null) {
-      // Only the most recent decision can be taken back.
-      if (e.at === st.count) {
-        e.banked = null;
-        e.at = null;
-        changed();
-      }
+      undoing = pid;
       return;
     }
-    if (st.bank <= 0) return;
+    if (st.sevened || st.bank <= 0) return;
     e.banked = st.bank;
     e.at = st.count;
-    navigator.vibrate?.(12);
+    haptics.confirm();
+    changed();
+  }
+
+  function undoBank() {
+    const pid = undoing;
+    undoing = null;
+    if (!pid) return;
+    const e = round.entries[pid];
+    e.banked = null;
+    e.at = null;
+    // If a 7 has already ended the round, they're caught by it.
+    e.busted = st.sevened;
+    haptics.tap();
     changed();
   }
 
@@ -127,6 +142,7 @@
       <small>Roll {nextRoll}{safe ? ' · safe' : ''}</small>
       <b>{roller.name}'s roll</b>
     </div>
+    <svg class="tdice" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="5" width="38" height="38" rx="10" fill="currentColor" opacity=".16" /><circle cx="16" cy="16" r="4" fill="currentColor" /><circle cx="32" cy="32" r="4" fill="currentColor" /><circle cx="24" cy="24" r="4" fill="currentColor" /></svg>
   </div>
 {/if}
 
@@ -150,7 +166,7 @@
 <div class="grid">
   {#each players as p (p.id)}
     {@const e = round.entries[p.id]}
-    <button class="pl card" class:rolling={roller?.id === p.id} class:in={e.banked !== null} class:out={e.busted} disabled={st.sevened || (e.banked === null && st.bank <= 0) || (e.banked !== null && e.at !== st.count)} onclick={() => toggleBank(e)}>
+    <button class="pl card" class:rolling={roller?.id === p.id} class:in={e.banked !== null} class:out={e.busted} disabled={e.banked === null && (st.sevened || st.bank <= 0)} onclick={() => toggleBank(p.id)}>
       <Avatar player={p} size={34} />
       <span class="who">
         <span class="nm">{p.name}{#if roller?.id === p.id}<span class="dice-tag">Rolling</span>{/if}</span>
@@ -172,6 +188,16 @@
 </div>
 
 <div class="spacer" aria-hidden="true"></div>
+
+<Sheet open={undoing !== null} onclose={() => (undoing = null)} label="Undo bank">
+  {#if undoing}
+    {@const p = players.find((x) => x.id === undoing)!}
+    <p class="q"><b>Undo {p.name}'s bank?</b>{st.sevened
+        ? `The 7 already ended the round, so ${p.name} would score nothing this round instead of ${round.entries[p.id].banked?.toLocaleString()}.`
+        : `${round.entries[p.id].banked?.toLocaleString()} goes back into play and ${p.name} rejoins the round.`}</p>
+    <div class="row"><button class="cta soft" onclick={() => (undoing = null)}>Keep it</button><button class="cta" onclick={undoBank}>Undo bank</button></div>
+  {/if}
+</Sheet>
 
 {#if flash}
   {#key flash.id}
@@ -224,11 +250,21 @@
 <style>
   .turn {
     margin-top: 4px; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 12px; border-radius: 22px;
-    background: var(--p-cta); color: var(--p-on-cta); box-shadow: var(--p-shadow-lift);
+    background: linear-gradient(135deg, #ffd766, #f0b532 55%, #e29a1e); color: #2b1d03;
+    box-shadow: 0 0 0 2px rgba(255,215,102,.5), 0 14px 28px -10px rgba(226,154,30,.75);
+    animation: glow 2.4s ease-in-out infinite;
   }
-  .turn :global(.av) { box-shadow: 0 0 0 3px var(--p-gold); }
+  .turn :global(.av) { box-shadow: 0 0 0 3px #fff; }
+  .tdice { width: 38px; height: 38px; flex: none; }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(255,215,102,.5), 0 14px 28px -10px rgba(226,154,30,.75); }
+    50% { box-shadow: 0 0 0 6px rgba(255,215,102,.28), 0 14px 32px -8px rgba(226,154,30,.9); }
+  }
+  @media (prefers-reduced-motion: reduce) { .turn { animation: none; } }
+  .q { margin: 4px 4px 0; font: 500 14.5px var(--f-ui); color: var(--p-muted); }
+  .q b { display: block; font: 800 18px var(--f-ui); color: var(--p-fg); margin-bottom: 4px; }
   .tw { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .tw small { font: 700 11.5px var(--f-ui); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+  .tw small { font: 800 11.5px var(--f-ui); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
   .tw b { font: 800 22px var(--f-ui); letter-spacing: -.02em; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pl.rolling { box-shadow: inset 0 0 0 2px var(--p-gold), var(--p-shadow); }
   .dice-tag { margin-left: 6px; font: 800 10px var(--f-ui); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; background: var(--p-gold-soft); color: var(--p-gold-text); vertical-align: 2px; }

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { haptics } from '../lib/haptics';
+
   /** Two on-screen dice. Tap to roll; they tumble briefly, then report the faces. */
   let {
     faces = $bindable<[number, number]>([1, 1]),
@@ -35,13 +37,12 @@
       return;
     }
     rolling = true;
-    navigator.vibrate?.(15);
+    haptics.rattle();
     const flicker = setInterval(() => (faces = [d6(), d6()]), 70);
     setTimeout(() => {
       clearInterval(flicker);
       faces = result;
       rolling = false;
-      navigator.vibrate?.([10, 40, 10]);
       onroll(...result);
     }, 650);
   }

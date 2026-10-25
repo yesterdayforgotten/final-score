@@ -144,6 +144,7 @@ async function f7Round(scores) {
   }
 }
 await f7Round({ Maya: 34, Theo: 'bust' });
+await expect((await page.locator('.pc', { hasText: 'Maya' }).locator('.sub').innerText()) === '166 to win', 'flip 7 shows points to win');
 // Sam uses the card picker: 0,1,3,5,6,8,9 = 32 + Flip 7 15 = 47
 await tap(page.getByRole('button', { name: "Count Sam's cards" }));
 for (const n of [0, 1, 3, 5, 6, 8, 9]) await page.locator('.deck').getByRole('button', { name: String(n), exact: true }).click();
@@ -196,6 +197,13 @@ await page.waitForSelector('text=Everyone banked');
 const bt = await page.locator('.tp .s').allInnerTexts();
 await expect(JSON.stringify(bt) === JSON.stringify(['81', '170']), `bank totals ${bt}`);
 await expect((await page.locator('.pl', { hasText: 'Maya' }).locator('.gap').innerText()).includes('89 behind'), 'bank shows the gap to the leader');
+await page.locator('.pl', { hasText: 'Theo' }).click();
+await page.getByRole('button', { name: 'Undo bank' }).click();
+await page.waitForSelector('text=Tap a player to bank');
+await expect((await page.locator('.tp .s').allInnerTexts())[1] === '0', 'a bank can be undone later in the round');
+await shot('13c-bank-gold-banner');
+await page.locator('.pl', { hasText: 'Theo' }).click();
+await page.waitForSelector('text=Everyone banked');
 await page.getByRole('button', { name: /Next round/ }).click();
 await page.waitForSelector('text=Round 2 of 10');
 await page.getByRole('button', { name: 'More', exact: true }).click();

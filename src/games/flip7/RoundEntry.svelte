@@ -51,6 +51,7 @@
 {#each players as p, i (p.id)}
   {@const e = round.entries[p.id]}
   {@const pts = score(e)}
+  {@const need = game.options.target - (before[p.id] + (pts ?? 0))}
   <div class="card pc" class:lift={i === 0}>
     <div class="pc-h">
       <Avatar player={p} />
@@ -59,6 +60,7 @@
           {#if i === dealer}<span class="dealer"><Icon name="deal" size={12} stroke={2.4} />Dealer</span>{/if}
           {#if e.hand && isFlip7(e.hand) && !e.bust}<span class="f7bonus">Flip 7 +{FLIP7_BONUS}</span>{/if}
         </span>
+        <span class="sub num" class:hit={need <= 0}>{need > 0 ? `${need} to win` : `Reached ${game.options.target}!`}</span>
       </div>
       {#if pts !== null}
         <div class="res">
@@ -127,5 +129,6 @@
   .mc { width: 26px; height: 36px; border-radius: 6px; background: var(--p-surface); box-shadow: 0 0 0 1px var(--p-hair-strong); display: grid; place-items: center; font: 700 14px var(--f-f7); color: var(--p-fg); }
   .mc.mod { width: auto; padding: 0 5px; color: var(--p-accent-text); }
   .htotal { margin-left: auto; font: 800 22px var(--f-ui); }
+  .sub.hit { color: var(--p-good); font-weight: 700; }
   .f7bonus { font: 700 10.5px var(--f-ui); padding: 3px 8px; border-radius: 999px; background: linear-gradient(90deg, #ffcf3f, #ff9a3d); color: #2a1a3e; letter-spacing: .03em; text-transform: uppercase; flex: none; }
 </style>
