@@ -83,12 +83,15 @@
   <Sheet open={settings} onclose={() => (settings = false)} label="Settings">
     <h2 class="sh">Settings</h2>
     <Settings />
+    <button class="mp" onclick={() => { settings = false; go('/players'); }}><Icon name="edit" size={18} />Manage players<Icon name="next" size={18} /></button>
     <button class="cta" style="flex: none" onclick={() => (settings = false)}>Done</button>
   </Sheet>
 </div>
 
 <style>
   .rb { display: flex; gap: 8px; }
+  .mp { display: flex; align-items: center; gap: 10px; padding: 14px 6px; font: 700 15px var(--f-ui); border-top: 1px solid var(--p-hair); text-align: left; }
+  .mp :global(svg:last-child) { margin-left: auto; color: var(--p-muted); }
   .sh { margin: 0 4px; font: 800 20px var(--f-ui); letter-spacing: -.01em; }
   .big { padding: 6px calc(var(--gutter-r) + 8px) 0 calc(var(--gutter-l) + 8px); }
   .big small { font: 600 13px var(--f-ui); color: var(--p-muted); text-transform: uppercase; letter-spacing: .08em; }

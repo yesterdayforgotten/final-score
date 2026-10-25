@@ -46,7 +46,14 @@ export async function findOrCreatePlayer(name: string): Promise<Player> {
   if (!key) throw new Error('Player name is empty');
   return db.transaction('rw', db.players, async () => {
     const existing = await db.players.where('nameKey').equals(key).first();
-    if (existing) return existing;
+    if (existing) {
+      // Typing a forgotten player's name brings them back.
+      if (existing.hidden) {
+        await db.players.update(existing.id, { hidden: false });
+        existing.hidden = false;
+      }
+      return existing;
+    }
     const p: Player = { id: uid(), name: cleanName(name), nameKey: key, color: await nextColor(), lastUsedAt: 0, timesPlayed: 0 };
     await db.players.add(p);
     return p;
@@ -80,7 +87,7 @@ export interface Suggestion {
 export async function suggestPlayers(query: string, gameType: string, exclude: string[] = [], limit = 5): Promise<Suggestion[]> {
   const q = nameKey(query);
   const here = await lastPlayedIn(gameType);
-  const all = (await db.players.toArray()).filter((p) => !exclude.includes(p.id) && p.timesPlayed > 0);
+  const all = (await db.players.toArray()).filter((p) => !exclude.includes(p.id) && p.timesPlayed > 0 && !p.hidden);
   const rank = (p: Player) => {
     if (!q) return 0;
     if (p.nameKey.startsWith(q)) return 0;
@@ -94,6 +101,54 @@ export async function suggestPlayers(query: string, gameType: string, exclude: s
     .sort((a, b) => a.r - b.r || (here.get(b.p.id) ?? 0) - (here.get(a.p.id) ?? 0) || b.p.lastUsedAt - a.p.lastUsedAt)
     .slice(0, limit)
     .map(({ p }) => ({ player: p, lastHere: here.get(p.id) }));
+}
+
+export interface PlayerSummary {
+  player: Player;
+  games: number;
+  lastPlayed?: number;
+}
+
+/** Remembered players (not forgotten), most recently played first, with how many games each is in. */
+export async function listPlayers(): Promise<PlayerSummary[]> {
+  const counts = new Map<string, { games: number; last: number }>();
+  await db.games.each((g) => {
+    for (const id of g.playerIds) {
+      const c = counts.get(id) ?? { games: 0, last: 0 };
+      c.games++;
+      c.last = Math.max(c.last, g.createdAt);
+      counts.set(id, c);
+    }
+  });
+  return (await db.players.toArray())
+    .filter((p) => !p.hidden)
+    .map((p) => ({ player: p, games: counts.get(p.id)?.games ?? 0, lastPlayed: counts.get(p.id)?.last }))
+    .sort((a, b) => (b.lastPlayed ?? 0) - (a.lastPlayed ?? 0) || a.player.name.localeCompare(b.player.name));
+}
+
+/** Forget a player: removed entirely if they're in no games, otherwise hidden so history keeps their name. */
+export async function forgetPlayer(id: string) {
+  await db.transaction('rw', db.players, db.games, async () => {
+    const inGames = await db.games.filter((g) => g.playerIds.includes(id)).count();
+    if (inGames) await db.players.update(id, { hidden: true });
+    else await db.players.delete(id);
+  });
+}
+
+/** Rename a player everywhere. Fails if another remembered player already has that name. */
+export async function renamePlayer(id: string, name: string): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const key = nameKey(name);
+  if (!key) return { ok: false, reason: 'Enter a name.' };
+  return db.transaction('rw', db.players, async () => {
+    const clash = await db.players.where('nameKey').equals(key).first();
+    if (clash && clash.id !== id) {
+      if (!clash.hidden) return { ok: false as const, reason: `There's already a player called ${clash.name}.` };
+      // Free the name from a forgotten player.
+      await db.players.update(clash.id, { nameKey: `${clash.nameKey}#${clash.id}` });
+    }
+    await db.players.update(id, { name: cleanName(name), nameKey: key });
+    return { ok: true as const };
+  });
 }
 
 export async function createGame<O>(gameType: string, playerIds: string[], options: O, firstRound: Omit<Round, 'id' | 'gameId' | 'index' | 'updatedAt'>): Promise<Game<O>> {

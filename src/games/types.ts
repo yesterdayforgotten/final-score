@@ -10,6 +10,8 @@ export interface Player {
   color: number;
   lastUsedAt: number;
   timesPlayed: number;
+  /** Forgotten: left out of suggestions, kept so past results still show the name. */
+  hidden?: boolean;
 }
 
 export interface Game<O = unknown> {

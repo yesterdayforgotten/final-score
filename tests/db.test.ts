@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  createGame, db, deleteGame, findOrCreatePlayer, getGame, getRounds, listGames, saveRound, suggestPlayers, useDatabase,
+  createGame, db, deleteGame, findOrCreatePlayer, forgetPlayer, getGame, getRounds, listGames, listPlayers, renamePlayer, saveRound, suggestPlayers, useDatabase,
 } from '../src/lib/db';
 
 let n = 0;
@@ -88,5 +88,46 @@ describe('games', () => {
     await deleteGame(g.id);
     expect(await getGame(g.id)).toBeUndefined();
     expect(await getRounds(g.id)).toEqual([]);
+  });
+});
+
+describe('managing players', () => {
+  it('forgets a player with history by hiding them from suggestions', async () => {
+    const p = await findOrCreatePlayer('Sam');
+    await createGame('flip7', [p.id], {}, round0);
+    await forgetPlayer(p.id);
+    expect(await suggestPlayers('', 'flip7')).toEqual([]);
+    expect((await db.players.get(p.id))?.name).toBe('Sam');
+    expect((await listPlayers()).map((x) => x.player.name)).toEqual([]);
+  });
+
+  it('removes a player with no games entirely', async () => {
+    const p = await findOrCreatePlayer('Typo');
+    await forgetPlayer(p.id);
+    expect(await db.players.get(p.id)).toBeUndefined();
+  });
+
+  it('brings a forgotten player back when their name is typed again', async () => {
+    const p = await findOrCreatePlayer('Sam');
+    await createGame('flip7', [p.id], {}, round0);
+    await forgetPlayer(p.id);
+    const again = await findOrCreatePlayer('sam');
+    expect(again.id).toBe(p.id);
+    expect((await suggestPlayers('', 'flip7')).map((x) => x.player.name)).toEqual(['Sam']);
+  });
+
+  it('renames, refusing a name another player already has', async () => {
+    const a = await findOrCreatePlayer('Mya');
+    await findOrCreatePlayer('Theo');
+    expect(await renamePlayer(a.id, 'Maya')).toEqual({ ok: true });
+    expect((await db.players.get(a.id))?.name).toBe('Maya');
+    expect((await renamePlayer(a.id, 'theo')).ok).toBe(false);
+  });
+
+  it('counts games per player', async () => {
+    const a = await findOrCreatePlayer('Maya');
+    await createGame('flip7', [a.id], {}, round0);
+    await createGame('bank', [a.id], {}, round0);
+    expect((await listPlayers())[0]).toMatchObject({ games: 2 });
   });
 });

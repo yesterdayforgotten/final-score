@@ -6,6 +6,7 @@
   import Home from './routes/Home.svelte';
   import NewGame from './routes/NewGame.svelte';
   import Play from './routes/Play.svelte';
+  import Players from './routes/Players.svelte';
 
   const [a, b, c] = $derived(route.path);
   const def = $derived(a === 'g' && b ? gameById(b) : undefined);
@@ -17,7 +18,9 @@
   });
 </script>
 
-{#if a === 'play' && b}
+{#if a === 'players'}
+  <Players />
+{:else if a === 'play' && b}
   {#key b}<Play id={b} />{/key}
 {:else if def && c === 'new'}
   {#key route.query.get('from')}<NewGame {def} from={route.query.get('from')} />{/key}

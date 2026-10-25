@@ -258,6 +258,22 @@ await page.waitForSelector('text=Maya wins');
 await expect(true, 'first to the target without the pink cow wins');
 await shot('16-herd-result');
 
+// ---------- manage players ----------
+await page.goto(base + '#/');
+await page.getByRole('button', { name: 'Settings' }).click();
+await page.getByRole('button', { name: 'Manage players' }).click();
+await page.waitForSelector('text=Players here are suggested');
+await shot('17-players');
+await page.getByRole('button', { name: 'Forget Sam' }).click();
+await page.locator('.bsheet').getByRole('button', { name: 'Forget' }).click();
+await page.waitForTimeout(300);
+await expect(!(await text()).includes('Sam'), 'forgotten player leaves the list');
+await page.getByRole('button', { name: 'Back' }).click();
+await page.getByRole('button', { name: /Flip 7/ }).click();
+await page.getByRole('button', { name: 'New game' }).click();
+await page.waitForSelector('.quick');
+await expect(!(await page.locator('.quick').innerText()).includes('Sam'), 'forgotten player is no longer suggested');
+
 // ---------- offline ----------
 await page.goto(base + '#/');
 await page.waitForTimeout(1500);
