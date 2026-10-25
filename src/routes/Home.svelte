@@ -3,6 +3,8 @@
   import Band from '../components/Band.svelte';
   import Icon from '../components/Icon.svelte';
   import Ring from '../components/Ring.svelte';
+  import Settings from '../components/Settings.svelte';
+  import Sheet from '../components/Sheet.svelte';
   import ThemeButton from '../components/ThemeButton.svelte';
   import { GAMES, gameById } from '../games/registry';
   import type { Game, Player } from '../games/types';
@@ -16,6 +18,7 @@
 
   interface Resume { game: Game; players: Player[]; done: number; leader?: string }
   let resumes = $state<Resume[]>([]);
+  let settings = $state(false);
   let stats = $state<Record<string, { count: number; last?: number }>>({});
 
   const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(Date.now());
@@ -45,7 +48,9 @@
 
 <div class="screen t-base">
   <Band plain>
-    {#snippet right()}<ThemeButton />{/snippet}
+    {#snippet right()}
+      <span class="rb"><ThemeButton /><button class="ibtn" aria-label="Settings" onclick={() => (settings = true)}><Icon name="gear" /></button></span>
+    {/snippet}
     <div class="big"><small>{today}</small><h1>Final Score</h1></div>
   </Band>
   <main class="content flat">
@@ -75,9 +80,16 @@
       </button>
     {/each}
   </main>
+  <Sheet open={settings} onclose={() => (settings = false)} label="Settings">
+    <h2 class="sh">Settings</h2>
+    <Settings />
+    <button class="cta" style="flex: none" onclick={() => (settings = false)}>Done</button>
+  </Sheet>
 </div>
 
 <style>
+  .rb { display: flex; gap: 8px; }
+  .sh { margin: 0 4px; font: 800 20px var(--f-ui); letter-spacing: -.01em; }
   .big { padding: 6px calc(var(--gutter-r) + 8px) 0 calc(var(--gutter-l) + 8px); }
   .big small { font: 600 13px var(--f-ui); color: var(--p-muted); text-transform: uppercase; letter-spacing: .08em; }
   .big h1 { margin: 2px 0 0; font: 800 36px var(--f-ui); letter-spacing: -.03em; line-height: 1.05; }

@@ -4,6 +4,31 @@
  */
 type Pattern = number | number[];
 
+const KEY = 'fs.haptics';
+
+function readEnabled(): boolean {
+  try {
+    return localStorage.getItem(KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
+
+let enabled = readEnabled();
+
+export const hapticsEnabled = () => enabled;
+
+export function setHapticsEnabled(on: boolean) {
+  enabled = on;
+  try {
+    if (on) localStorage.removeItem(KEY);
+    else localStorage.setItem(KEY, 'off');
+  } catch {
+    /* private mode */
+  }
+  if (on) buzz(15); // a sample so you can feel it's back on
+}
+
 let iosSwitch: HTMLLabelElement | null = null;
 
 function iosTick() {
@@ -23,6 +48,7 @@ function iosTick() {
 }
 
 function buzz(p: Pattern) {
+  if (!enabled) return;
   try {
     if ('vibrate' in navigator) navigator.vibrate(p);
     else iosTick();

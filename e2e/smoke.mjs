@@ -32,6 +32,15 @@ const text = () => page.locator('body').innerText();
 await page.goto(base);
 await page.waitForSelector('text=Final Score');
 await shot('01-home-empty');
+await page.getByRole('button', { name: 'Settings' }).click();
+await page.getByRole('switch', { name: 'Vibration' }).click();
+await expect((await page.evaluate(() => localStorage.getItem('fs.haptics'))) === 'off', 'vibration can be turned off in settings');
+await expect((await page.getByRole('switch', { name: 'Vibration' }).getAttribute('aria-checked')) === 'false', 'vibration switch shows off');
+await page.waitForTimeout(300);
+await shot('01a-settings');
+await page.getByRole('switch', { name: 'Vibration' }).click();
+await page.locator('.bsheet').getByRole('button', { name: 'Done' }).click();
+await page.waitForTimeout(300);
 
 // ---------- Skull King ----------
 await page.getByRole('button', { name: /Skull King/ }).click();
