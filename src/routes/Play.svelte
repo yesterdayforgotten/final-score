@@ -74,7 +74,7 @@
     if (!game || !def) return;
     const final = totals(def, game, rounds);
     game.finalScores = final;
-    game.winnerIds = leaders(final);
+    game.winnerIds = def.winners ? def.winners(game, rounds, final) : leaders(final);
     await saveGame($state.snapshot(game) as Game);
   }
 
@@ -93,7 +93,7 @@
       return;
     }
     const done = completedRounds(def, game, rounds);
-    if (def.isOver(game, done, totals(def, game, rounds))) {
+    if (def.isOver(game, done, totals(def, game, rounds), rounds)) {
       await finish();
       return;
     }
@@ -219,7 +219,7 @@
         </div>
         <button class="pill" style="flex: none; height: 48px" onclick={() => go(`/play/${game!.id}/board`)}><Icon name="grid" size={18} />Round by round</button>
       {:else if roundIdx >= 0}
-        <def.RoundEntry {game} bind:round={rounds[roundIdx]} {players} {before} {editing} onchange={save} onnext={next} />
+        <def.RoundEntry {game} bind:round={rounds[roundIdx]} {players} {before} {rounds} {editing} onchange={save} onnext={next} />
       {/if}
     </main>
 
@@ -265,6 +265,7 @@
   .rbtns { display: flex; gap: 8px; flex: none; }
   .gt { font-size: 44px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 38px; }
+  :global(.t-herd) .gt { font-size: 34px; }
   :global(.t-bank) .gt { font-size: 40px; letter-spacing: .02em; }
   .ut { font: 800 32px var(--f-ui) !important; letter-spacing: -.02em; color: var(--p-hdr-fg); }
   .dots { display: flex; gap: 5px; padding-bottom: 6px; }

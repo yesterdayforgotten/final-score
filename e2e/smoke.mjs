@@ -228,6 +228,36 @@ await page.waitForTimeout(900);
 await expect((await page.locator('.hist .rc').count()) === 1, 'on-screen dice records a roll');
 await shot('14-bank-dice');
 
+
+// ---------- Herd Mentality ----------
+await page.goto(base + '#/');
+await page.getByRole('button', { name: /Herd Mentality/ }).click();
+await page.getByRole('button', { name: 'New game' }).click();
+for (const n of ['Maya', 'Theo', 'Jules']) await page.locator('.quick').getByRole('button', { name: new RegExp(n) }).click();
+for (let i = 0; i < 5; i++) await tap(page.getByRole('button', { name: 'Fewer cows to win' }));
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('.qcard .q');
+const q1 = await page.locator('.qcard .q').innerText();
+await expect(q1.length > 5, `herd shows a question: "${q1}"`);
+await page.getByRole('button', { name: 'Different question' }).click();
+await expect((await page.locator('.qcard .q').innerText()) !== q1, 'herd can skip to a different question');
+const pc = (n) => page.locator('.pc', { hasText: n });
+await tap(pc('Maya').getByRole('button', { name: 'In the herd' }));
+await tap(pc('Theo').getByRole('button', { name: 'In the herd' }));
+await tap(pc('Jules').getByRole('button', { name: 'Odd one out' }));
+await shot('15-herd-round');
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.waitForSelector('text=Jules has the pink cow');
+await expect(true, 'pink cow goes to the odd one out');
+await tap(pc('Maya').getByRole('button', { name: 'In the herd' }));
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.waitForSelector('text=Round 3');
+await tap(pc('Maya').getByRole('button', { name: 'In the herd' }));
+await page.getByRole('button', { name: 'Finish game' }).click();
+await page.waitForSelector('text=Maya wins');
+await expect(true, 'first to the target without the pink cow wins');
+await shot('16-herd-result');
+
 // ---------- offline ----------
 await page.goto(base + '#/');
 await page.waitForTimeout(1500);

@@ -46,6 +46,8 @@ export interface RoundEntryProps<O, E> {
   players: Player[];
   /** Totals before this round, by player id. */
   before: Record<string, number>;
+  /** Every round of the game so far (for games whose state carries across rounds). */
+  rounds: Round<E>[];
   /** Editing a round that was already finished (button reads "Done"). */
   editing: boolean;
   /** Call after any change; the screen saves the round. */
@@ -81,7 +83,9 @@ export interface GameDefinition<O = any, E = any> {
   score: (entry: E, index: number, options: O) => number | null;
   roundComplete: (round: Round<E>, game: Game<O>) => boolean;
   /** Called after a round completes, with totals including it. */
-  isOver: (game: Game<O>, completedRounds: number, totals: Record<string, number>) => boolean;
+  isOver: (game: Game<O>, completedRounds: number, totals: Record<string, number>, rounds: Round<E>[]) => boolean;
+  /** Who won, when it isn't simply the highest total (Herd Mentality: not the pink cow holder). */
+  winners?: (game: Game<O>, rounds: Round<E>[], totals: Record<string, number>) => string[];
   /** Header line on the play screen, e.g. "Round 4 of 10 · 4 cards". */
   roundLabel: (index: number, options: O) => string;
   /** Short tag shown on history cards, e.g. "Classic". */

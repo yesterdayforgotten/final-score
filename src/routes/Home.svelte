@@ -120,6 +120,9 @@
   .tile-flip7 h2 { font-size: 40px; letter-spacing: -.01em; }
   .tile-flip7 .art { right: 40px; top: 10px; }
   .tile-flip7 .go { background: rgba(42,26,62,.12); }
+  .tile-herd { background: radial-gradient(120% 100% at 85% 0%, #ffa3cb 0%, #ff5fa2 45%, #c2256f 100%); color: #fff; }
+  .tile-herd h2 { font-size: 40px; font-weight: 400; letter-spacing: .01em; max-width: 60%; }
+  .tile-herd .art { right: 18px; top: 14px; }
   .tile-bank { background: radial-gradient(120% 100% at 85% 0%, #23966b 0%, #11573f 50%, #08291e 100%); color: #f6ecc9; }
   .tile-bank h2 { font-size: 46px; font-weight: 400; letter-spacing: .02em; }
   .tile-bank .art { right: 26px; top: 18px; width: 150px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.35)); }
