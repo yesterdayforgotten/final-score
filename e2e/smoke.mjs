@@ -287,6 +287,31 @@ await page.getByRole('button', { name: 'New game' }).click();
 await page.waitForSelector('.quick');
 await expect(!(await page.locator('.quick').innerText()).includes('Sam'), 'forgotten player is no longer suggested');
 
+// ---------- Any game (Hearts: lowest wins, ends at 50) ----------
+await page.goto(base + '#/');
+await page.getByRole('button', { name: /Any game/ }).click();
+await page.getByRole('button', { name: 'New game' }).click();
+await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
+await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
+await page.getByLabel('Game name').fill('Hearts');
+await tap(page.getByRole('radio', { name: 'Lowest score' }));
+await tap(page.getByRole('radio', { name: 'At a score' }));
+await page.getByLabel('Target score').fill('50');
+await shot('19-any-new');
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('.gt >> text=Hearts');
+await page.getByLabel("Maya's score", { exact: true }).fill('30');
+await tap(page.getByRole('button', { name: "Make Theo's score negative or positive" }));
+await page.getByLabel("Theo's score", { exact: true }).fill('5');
+await expect((await page.getByLabel("Theo's score", { exact: true }).inputValue()) === '−5', 'any game takes negative scores with ±');
+await shot('20-any-round');
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.getByLabel("Maya's score", { exact: true }).fill('25');
+await page.getByLabel("Theo's score", { exact: true }).fill('10');
+await page.getByRole('button', { name: 'Finish game' }).click();
+await page.waitForSelector('text=Theo wins');
+await expect(true, 'any game: lowest total wins when someone reaches the target');
+
 // ---------- long-press an in-progress game on home ----------
 await page.goto(base + '#/');
 const card = page.locator('.resume', { hasText: 'Bank in progress' });

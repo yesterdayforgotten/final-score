@@ -8,7 +8,7 @@
   import { gameById } from '../games/registry';
   import type { Game, Player, Round } from '../games/types';
   import { deleteGame, deleteRoundsFrom, getGame, getPlayers, getRounds, renamePlayer, saveGame, saveRound } from '../lib/db';
-  import { completedRounds, leaders, standings, totals } from '../lib/engine';
+  import { completedRounds, isLow, leaders, progressOf, standings, titleOf, totals } from '../lib/engine';
   import { fmtDay, fmtDuration, plural } from '../lib/format';
   import { back, go, route } from '../lib/router.svelte';
   import { setThemeColor } from '../lib/theme';
@@ -58,7 +58,9 @@
   const editing = $derived(editIndex !== null && (finished || editIndex < lastIndex));
   const view = $derived(board ? 'board' : finished && editIndex === null ? 'result' : 'round');
   const t = $derived(game && def ? totals(def, game, rounds) : {});
-  const lead = $derived(leaders(t));
+  const low = $derived(game && def ? isLow(def, game.options) : false);
+  const prog = $derived(game && def ? progressOf(def, game.options) : ({ kind: 'open' } as const));
+  const lead = $derived(leaders(t, low));
   const roundIdx = $derived(rounds.findIndex((r) => r.index === currentIndex));
   const before = $derived(game && def ? totals(def, game, rounds, currentIndex) : {});
 
@@ -99,7 +101,7 @@
     if (!game || !def) return;
     const final = totals(def, game, rounds);
     game.finalScores = final;
-    game.winnerIds = def.winners ? def.winners(game, rounds, final) : leaders(final);
+    game.winnerIds = def.winners ? def.winners(game, rounds, final) : leaders(final, isLow(def, game.options));
     await saveGame($state.snapshot(game) as Game);
   }
 
@@ -201,9 +203,9 @@
         {:else if view === 'board'}
           <h1 class="ut">Scoreboard</h1>
         {:else}
-          <h1 class="gt" style:font-family={def!.titleFont}>{def!.name}</h1>
-          {#if def!.progress.kind === 'rounds'}
-            {@const max = def!.progress.maxRounds(game!.options)}
+          <h1 class="gt" style:font-family={def!.titleFont}>{titleOf(def!, game!.options)}</h1>
+          {#if prog.kind === 'rounds'}
+            {@const max = prog.max}
             <div class="dots" aria-hidden="true">
               {#each { length: max } as _, i}<i class:done={i < currentIndex} class:now={i === currentIndex}></i>{/each}
             </div>
@@ -211,7 +213,7 @@
         {/if}
       {/snippet}
       {#if view === 'round'}
-        <TotalsStrip {players} totals={t} leaders={lead} target={def.progress.kind === 'target' ? def.progress.target(game.options) : undefined} onpick={startRename} />
+        <TotalsStrip {players} totals={t} leaders={lead} target={prog.kind === 'target' && !low ? prog.target : undefined} onpick={startRename} />
       {/if}
     </Band>
 
@@ -220,7 +222,7 @@
         <div style="height: 8px"></div>
         <Scoreboard {def} {game} {rounds} {players} current={finished ? -1 : lastIndex} onpick={pick} />
       {:else if view === 'result'}
-        {@const order = standings(game, game.finalScores ?? t)}
+        {@const order = standings(game, game.finalScores ?? t, low)}
         {@const winners = game.winnerIds ?? lead}
         {@const champ = players.find((p) => p.id === winners[0])}
         {#if champ}
@@ -290,7 +292,7 @@
         <Settings />
         <div class="menu">
           {#if !finished && def.midGameOptions}
-            <button onclick={() => (confirm = 'settings')}><Icon name="grid" />{def.progress.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
+            <button onclick={() => (confirm = 'settings')}><Icon name="grid" />{prog.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
           {/if}
           <button onclick={() => ((renaming = null), (confirm = 'rename'))}><Icon name="edit" />Rename a player</button>
           {#if !finished}
@@ -307,6 +309,7 @@
   .rbtns { display: flex; gap: 8px; flex: none; }
   .gt { font-size: 44px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 38px; }
+  :global(.t-any) .gt { font-weight: 800; font-size: 34px; letter-spacing: -.02em; }
   :global(.t-herd) .gt { font-size: 34px; }
   :global(.t-bank) .gt { font-size: 40px; letter-spacing: .02em; }
   .ut { font: 800 32px var(--f-ui) !important; letter-spacing: -.02em; color: var(--p-hdr-fg); }

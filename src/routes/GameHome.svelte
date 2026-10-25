@@ -6,7 +6,7 @@
   import ThemeButton from '../components/ThemeButton.svelte';
   import type { Game, GameDefinition, Player } from '../games/types';
   import { getPlayers, getRounds, listGames } from '../lib/db';
-  import { completedRounds, leaders, standings, totals } from '../lib/engine';
+  import { completedRounds, isLow, leaders, progressOf, standings, titleOf, totals } from '../lib/engine';
   import { fmtDay, fmtDuration, plural } from '../lib/format';
   import { back, go } from '../lib/router.svelte';
   import { setThemeColor } from '../lib/theme';
@@ -31,7 +31,7 @@
       if (a) {
         const rounds = await getRounds(a.id);
         const t = totals(def, a, rounds);
-        const lead = leaders(t);
+        const lead = leaders(t, isLow(def, a.options));
         active = { game: a, done: completedRounds(def, a, rounds), leader: lead.length === 1 ? byId.get(lead[0])?.name : undefined, score: lead.length === 1 ? t[lead[0]] : undefined };
       } else active = null;
       const rows: Row[] = [];
@@ -40,7 +40,7 @@
         const t = g.finalScores ?? {};
         rows.push({
           game: g,
-          order: standings(g, t).map((pid) => ({ player: byId.get(pid)!, score: t[pid] ?? 0 })).filter((x) => x.player),
+          order: standings(g, t, isLow(def, g.options)).map((pid) => ({ player: byId.get(pid)!, score: t[pid] ?? 0 })).filter((x) => x.player),
           rounds: (await getRounds(g.id)).length,
         });
         for (const w of g.winnerIds ?? []) wins.set(w, (wins.get(w) ?? 0) + 1);
@@ -65,13 +65,14 @@
 
   <main class="content">
     {#if active}
+      {@const prog = progressOf(def, active.game.options)}
       <button class="card lift resume" onclick={() => go(`/play/${active!.game.id}`)}>
-        {#if def.progress.kind === 'rounds'}
-          <Ring done={active.done} total={def.progress.maxRounds(active.game.options)} color="var(--p-gold)" />
+        {#if prog.kind === 'rounds'}
+          <Ring done={active.done} total={prog.max} color="var(--p-gold)" />
         {:else}
           <span class="rnd num">R{active.done + 1}</span>
         {/if}
-        <span class="t"><b>Game in progress</b><span>{active.leader ? `${active.leader} leads with ${active.score}` : 'Tap to carry on'}</span></span>
+        <span class="t"><b>{def.displayName ? titleOf(def, active.game.options) : 'Game'} in progress</b><span>{active.leader ? `${active.leader} leads with ${active.score}` : 'Tap to carry on'}</span></span>
         <span class="go"><Icon name="next" /></span>
       </button>
     {/if}
@@ -112,6 +113,7 @@
 <style>
   .gt { font-size: 48px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 42px; }
+  :global(.t-any) .gt { font-weight: 800; font-size: 40px; letter-spacing: -.02em; }
   :global(.t-herd) .gt { font-size: 40px; }
   :global(.t-bank) .gt { font-size: 46px; letter-spacing: .02em; }
   .stat { margin: 6px 0 0; padding: 0 calc(var(--gutter-r) + 6px) 0 calc(var(--gutter-l) + 6px); font: 600 13.5px var(--f-ui); color: var(--p-hdr-muted); position: relative; }

@@ -42,6 +42,8 @@ export interface Round<E = unknown> {
   updatedAt: number;
 }
 
+export type Progress = { kind: 'rounds'; max: number } | { kind: 'target'; target: number } | { kind: 'open' };
+
 export interface RoundEntryProps<O, E> {
   game: Game<O>;
   round: Round<E>;
@@ -94,8 +96,18 @@ export interface GameDefinition<O = any, E = any> {
   optionsTag: (options: O) => string;
   /** Small detail line for a scoreboard cell, e.g. "1/1 +20". */
   cellDetail: (entry: E, index: number, options: O) => string;
-  /** 'rounds' shows round dots (needs maxRounds); 'target' shows progress bars to a score. */
-  progress: { kind: 'rounds'; maxRounds: (o: O) => number } | { kind: 'target'; target: (o: O) => number };
+  /**
+   * 'rounds' shows round dots (needs maxRounds); 'target' shows progress bars to a score.
+   * A function lets the choice depend on the game's options.
+   */
+  progress:
+    | { kind: 'rounds'; maxRounds: (o: O) => number }
+    | { kind: 'target'; target: (o: O) => number }
+    | ((o: O) => Progress);
+  /** Lowest total wins (golf-style games). */
+  lowWins?: (o: O) => boolean;
+  /** Name shown for a particular game, when players name it themselves. */
+  displayName?: (o: O) => string;
   RoundEntry: Component<RoundEntryProps<O, E>>;
   Options: Component<OptionsProps<O>>;
   /** Options can be changed during a game (the Options component honours `inGame`). */

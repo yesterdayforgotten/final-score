@@ -1,7 +1,7 @@
 <script lang="ts">
   import Avatar from '../components/Avatar.svelte';
   import type { Game, GameDefinition, Player, Round } from '../games/types';
-  import { leaders, totals } from '../lib/engine';
+  import { isLow, leaders, progressOf, totals } from '../lib/engine';
 
   let {
     def,
@@ -13,8 +13,9 @@
   }: { def: GameDefinition; game: Game; rounds: Round[]; players: Player[]; current?: number; onpick: (index: number) => void } = $props();
 
   const t = $derived(totals(def, game, rounds));
-  const lead = $derived(leaders(t));
-  const rowCount = $derived(def.progress.kind === 'rounds' ? Math.max(def.progress.maxRounds(game.options), rounds.length) : rounds.length);
+  const lead = $derived(leaders(t, isLow(def, game.options)));
+  const prog = $derived(progressOf(def, game.options));
+  const rowCount = $derived(prog.kind === 'rounds' ? Math.max(prog.max, rounds.length) : rounds.length);
   const byIndex = $derived(new Map(rounds.map((r) => [r.index, r])));
 </script>
 

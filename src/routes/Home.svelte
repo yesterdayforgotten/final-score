@@ -10,7 +10,7 @@
   import type { Game, Player } from '../games/types';
   import { activeGames, deleteGame, getPlayers, getRounds, listGames } from '../lib/db';
   import { longpress } from '../lib/longpress';
-  import { completedRounds, leaders, totals } from '../lib/engine';
+  import { completedRounds, isLow, leaders, progressOf, titleOf, totals } from '../lib/engine';
   import { fmtShort, fmtTime, plural } from '../lib/format';
   import { go } from '../lib/router.svelte';
   import { BASE_COLOR, setThemeColor } from '../lib/theme';
@@ -48,7 +48,7 @@
         const rounds = await getRounds(g.id);
         const players = await getPlayers(g.playerIds);
         const t = totals(def, g, rounds);
-        const lead = leaders(t);
+        const lead = leaders(t, isLow(def, g.options));
         out.push({ game: g, players, done: completedRounds(def, g, rounds), leader: lead.length === 1 ? players.find((p) => p.id === lead[0])?.name : undefined });
       }
       resumes = out;
@@ -72,14 +72,15 @@
   <main class="content flat">
     {#each resumes as r (r.game.id)}
       {@const def = gameById(r.game.gameType)!}
+      {@const prog = progressOf(def, r.game.options)}
       <div class="card resume {def.theme}" use:longpress={() => ((picked = r), (confirmDelete = false))} title="Long-press for options">
         <div class="top">
-          {#if def.progress.kind === 'rounds'}
-            <Ring done={r.done} total={def.progress.maxRounds(r.game.options)} />
+          {#if prog.kind === 'rounds'}
+            <Ring done={r.done} total={prog.max} />
           {:else}
             <span class="rnd num">R{r.done + 1}</span>
           {/if}
-          <div class="t"><b>{def.name} in progress</b><span>{r.leader ? `${r.leader} leads · ` : ''}{fmtTime(r.game.createdAt)}</span></div>
+          <div class="t"><b>{titleOf(def, r.game.options)} in progress</b><span>{r.leader ? `${r.leader} leads · ` : ''}{fmtTime(r.game.createdAt)}</span></div>
           <div class="avs">{#each r.players.slice(0, 4) as p (p.id)}<Avatar player={p} size={28} ring />{/each}</div>
         </div>
         <button class="cta small" onclick={() => go(`/play/${r.game.id}`)}>Resume game</button>
@@ -100,10 +101,10 @@
     {#if picked}
       {@const pdef = gameById(picked.game.gameType)!}
       {#if confirmDelete}
-        <p class="q"><b>Delete this {pdef.name} game?</b>Its scores so far will be gone for good.</p>
+        <p class="q"><b>Delete this {titleOf(pdef, picked.game.options)} game?</b>Its scores so far will be gone for good.</p>
         <div class="row"><button class="cta soft" onclick={() => (confirmDelete = false)}>Cancel</button><button class="cta danger" onclick={removePicked}>Delete</button></div>
       {:else}
-        <p class="q"><b>{pdef.name} in progress</b>{picked.players.map((p) => p.name).join(', ')} · started {fmtTime(picked.game.createdAt)}</p>
+        <p class="q"><b>{titleOf(pdef, picked.game.options)} in progress</b>{picked.players.map((p) => p.name).join(', ')} · started {fmtTime(picked.game.createdAt)}</p>
         <div class="menu">
           <button onclick={() => { const id = picked!.game.id; picked = null; go(`/play/${id}`); }}><Icon name="next" />Resume game</button>
           <button class="bad" onclick={() => (confirmDelete = true)}><Icon name="trash" />Delete game</button>
@@ -164,6 +165,10 @@
   .tile-herd { background: radial-gradient(120% 100% at 85% 0%, #ffa3cb 0%, #ff5fa2 45%, #c2256f 100%); color: #fff; }
   .tile-herd h2 { font-size: 40px; font-weight: 400; letter-spacing: .01em; max-width: 60%; }
   .tile-herd .art { right: 18px; top: 14px; }
+  .tile-any { background: radial-gradient(120% 100% at 85% 0%, #7d8cff 0%, #4b5bd6 50%, #232c80 100%); color: #fff; }
+  .tile-any h2 { font-size: 38px; font-weight: 800; letter-spacing: -.02em; }
+  .tile-any .art { right: 30px; top: 12px; width: 130px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.3)); }
+  .tile-any .art :global(svg) { width: 100%; height: auto; display: block; }
   .tile-bank { background: radial-gradient(120% 100% at 85% 0%, #23966b 0%, #11573f 50%, #08291e 100%); color: #f6ecc9; }
   .tile-bank h2 { font-size: 46px; font-weight: 400; letter-spacing: .02em; }
   .tile-bank .art { right: 26px; top: 18px; width: 150px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.35)); }
