@@ -23,6 +23,7 @@ export const bank: GameDefinition<BankOptions, BankEntry> = {
   progress: { kind: 'rounds', maxRounds: (o) => o.rounds },
   RoundEntry,
   Options,
+  midGameOptions: true,
   Art,
   minPlayers: 2,
   maxPlayers: 12,

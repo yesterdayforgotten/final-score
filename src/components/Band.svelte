@@ -53,7 +53,7 @@
   .wm { position: absolute; right: -40px; top: calc(var(--safe-top) + 30px); width: 220px; height: 220px; color: var(--p-hdr-fg); opacity: .06; pointer-events: none; }
   .wm :global(svg) { width: 100%; height: 100%; }
   .nav { display: flex; align-items: center; gap: 10px; padding: 0 var(--gutter-r) 0 var(--gutter-l); position: relative; min-height: 44px; }
-  .mid { flex: 1; text-align: center; font: 600 14px var(--f-ui); color: var(--p-hdr-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mid { flex: 1; min-width: 0; text-align: center; font: 600 14px var(--f-ui); color: var(--p-hdr-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .spacer { width: 40px; flex: none; }
   .band :global(.ibtn) {
     width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none;

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { bonusCounts, emptyBonus, score, type SkEntry, type SkOptions } from '../src/games/skull-king/rules';
+import { bonusCounts, cardsDealt, emptyBonus, roundCount, score, type SkEntry, type SkOptions } from '../src/games/skull-king/rules';
 
-const classic: SkOptions = { scoring: 'classic', rounds: 10 };
-const rascal: SkOptions = { scoring: 'rascal', rounds: 10 };
+const classic: SkOptions = { scoring: 'classic', startCards: 1, endCards: 10 };
+const rascal: SkOptions = { scoring: 'rascal', startCards: 1, endCards: 10 };
 
 function e(bid: number | null, tricks: number | null, bonus: Partial<SkEntry['bonus']> = {}, cannonball = false): SkEntry {
   return { bid, tricks, bonus: { ...emptyBonus(), ...bonus }, cannonball };
@@ -69,5 +69,30 @@ describe('rascal scoring', () => {
 
   it('never goes negative', () => {
     expect(score(e(5, 0), 9, rascal)).toBe(0);
+  });
+});
+
+describe('shorter games', () => {
+  const short: SkOptions = { scoring: 'classic', startCards: 3, endCards: 7 };
+
+  it('deals from the starting card count', () => {
+    expect(cardsDealt(0, short)).toBe(3);
+    expect(cardsDealt(4, short)).toBe(7);
+    expect(roundCount(short)).toBe(5);
+  });
+
+  it('scores a zero bid by cards dealt, not round number', () => {
+    expect(score(e(0, 0), 0, short)).toBe(30);
+    expect(score(e(0, 1), 0, short)).toBe(-30);
+  });
+
+  it('scores rascal by cards dealt', () => {
+    expect(score(e(1, 1), 0, { ...short, scoring: 'rascal' })).toBe(30);
+  });
+
+  it('reads older games that stored only a round count', () => {
+    const old = { scoring: 'classic', rounds: 8 } as SkOptions;
+    expect(roundCount(old)).toBe(8);
+    expect(cardsDealt(0, old)).toBe(1);
   });
 });

@@ -56,6 +56,8 @@ export interface RoundEntryProps<O, E> {
 
 export interface OptionsProps<O> {
   options: O;
+  /** Set when changing options during a game: the round being played (1-based). */
+  inGame?: { currentRound: number };
 }
 
 /**
@@ -90,6 +92,8 @@ export interface GameDefinition<O = any, E = any> {
   progress: { kind: 'rounds'; maxRounds: (o: O) => number } | { kind: 'target'; target: (o: O) => number };
   RoundEntry: Component<RoundEntryProps<O, E>>;
   Options: Component<OptionsProps<O>>;
+  /** Options can be changed during a game (the Options component honours `inGame`). */
+  midGameOptions?: boolean;
   /** Artwork for the home tile and header watermark. */
   Art: Component;
   /** Font family for the game title. */

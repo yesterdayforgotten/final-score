@@ -7,11 +7,11 @@
   import { dealerSeat } from '../../lib/engine';
   import { deltaClass, signed } from '../../lib/format';
   import type { RoundEntryProps } from '../types';
-  import { bonusCounts, bonusPoints, cardsDealt, score, type SkEntry, type SkOptions } from './rules';
+  import { bonusCounts, bonusPoints, cardsDealt, roundCount, score, type SkEntry, type SkOptions } from './rules';
 
   let { game, round = $bindable(), players, before, editing, onchange, onnext }: RoundEntryProps<SkOptions, SkEntry> = $props();
 
-  const n = $derived(cardsDealt(round.index));
+  const n = $derived(cardsDealt(round.index, game.options));
   const rascal = $derived(game.options.scoring === 'rascal');
   const phase = $derived(round.phase === 'tricks' ? 'tricks' : 'bids');
   const dealer = $derived(dealerSeat(round.index, players.length));
@@ -141,7 +141,7 @@
   <div class="dock">
     <button class="cta alt" aria-label="Back to bids" onclick={() => setPhase('bids')}><Icon name="back" size={18} stroke={2.4} /></button>
     <button class="cta" disabled={!tricksDone} onclick={onnext}>
-      {#if editing}Done{:else if round.index + 1 >= game.options.rounds}Finish game{:else}Next round<Icon name="next" size={18} stroke={2.4} />{/if}
+      {#if editing}Done{:else if round.index + 1 >= roundCount(game.options)}Finish game{:else}Next round<Icon name="next" size={18} stroke={2.4} />{/if}
     </button>
   </div>
 {/if}

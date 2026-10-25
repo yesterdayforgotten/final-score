@@ -21,7 +21,7 @@
   let players = $state<Player[]>([]);
   let missing = $state(false);
   let menu = $state(false);
-  let confirm = $state<'end' | 'delete' | null>(null);
+  let confirm = $state<'end' | 'delete' | 'settings' | null>(null);
 
   const def = $derived(game ? gameById(game.gameType) : undefined);
   const board = $derived(route.path[2] === 'board');
@@ -127,6 +127,12 @@
     back(`/play/${game.id}`);
   }
 
+  function closeMenu() {
+    if (confirm === 'settings' && game) void saveGame($state.snapshot(game) as Game);
+    menu = false;
+    confirm = null;
+  }
+
   async function remove() {
     if (!game || !def) return;
     await deleteGame(game.id);
@@ -155,7 +161,10 @@
       {#snippet art()}<def.Art />{/snippet}
       {#snippet right()}
         {#if view === 'round'}
-          <button class="ibtn" aria-label="Scoreboard" onclick={() => go(`/play/${game!.id}/board`)}><Icon name="grid" /></button>
+          <span class="rbtns">
+            <button class="ibtn" aria-label="Scoreboard" onclick={() => go(`/play/${game!.id}/board`)}><Icon name="grid" /></button>
+            <button class="ibtn" aria-label="More" onclick={() => (menu = true)}><Icon name="more" /></button>
+          </span>
         {:else}
           <button class="ibtn" aria-label="More" onclick={() => (menu = true)}><Icon name="more" /></button>
         {/if}
@@ -224,8 +233,12 @@
       </div>
     {/if}
 
-    <Sheet open={menu} onclose={() => ((menu = false), (confirm = null))} label="Game options">
-      {#if confirm === 'end'}
+    <Sheet open={menu} onclose={closeMenu} label="Game options">
+      {#if confirm === 'settings'}
+        <p class="q"><b>Game settings</b>Changes apply from the round you're on.</p>
+        <def.Options bind:options={game.options} inGame={{ currentRound: lastIndex + 1 }} />
+        <button class="cta" style="flex: none" onclick={closeMenu}>Done</button>
+      {:else if confirm === 'end'}
         <p class="q"><b>End the game now?</b>Scores from finished rounds are kept{completedRounds(def, game, rounds) === 0 ? '. No rounds are finished, so the game will be removed.' : ' and the unfinished round is dropped.'}</p>
         <div class="row"><button class="cta soft" onclick={() => (confirm = null)}>Cancel</button><button class="cta" onclick={endNow}>End game</button></div>
       {:else if confirm === 'delete'}
@@ -233,6 +246,9 @@
         <div class="row"><button class="cta soft" onclick={() => (confirm = null)}>Cancel</button><button class="cta danger" onclick={remove}>Delete</button></div>
       {:else}
         <div class="menu">
+          {#if !finished && def.midGameOptions}
+            <button onclick={() => (confirm = 'settings')}><Icon name="edit" />{def.progress.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
+          {/if}
           {#if !finished}
             <button onclick={() => (confirm = 'end')}><Icon name="flag" />End game now</button>
           {/if}
@@ -244,6 +260,7 @@
 {/if}
 
 <style>
+  .rbtns { display: flex; gap: 8px; flex: none; }
   .gt { font-size: 44px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 38px; }
   :global(.t-bank) .gt { font-size: 40px; letter-spacing: .02em; }

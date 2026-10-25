@@ -1,23 +1,28 @@
 <script lang="ts">
+  import Stepper from '../../components/Stepper.svelte';
   import type { OptionsProps } from '../types';
   import { ROUND_CHOICES, type BankOptions } from './rules';
 
-  let { options = $bindable() }: OptionsProps<BankOptions> = $props();
+  let { options = $bindable(), inGame }: OptionsProps<BankOptions> = $props();
+
+  const min = $derived(inGame?.currentRound ?? 1);
 </script>
 
 <div class="card">
   <div class="optrow">
-    <span>Rounds<small>Highest total after the last round wins</small></span>
-    <span class="mseg" role="radiogroup" aria-label="Rounds">
-      {#each ROUND_CHOICES as n}
-        <button role="radio" aria-checked={options.rounds === n} class:on={options.rounds === n} onclick={() => (options.rounds = n)}>{n}</button>
-      {/each}
-    </span>
+    <span>Rounds<small>{inGame ? `Playing round ${inGame.currentRound} of ${options.rounds}` : 'Highest total after the last round wins'}</small></span>
+    <Stepper value={options.rounds} {min} max={50} label="rounds" onchange={(v) => (options.rounds = v)} />
+  </div>
+  <div class="quick" role="group" aria-label="Common lengths">
+    {#each ROUND_CHOICES as n}
+      <button class:on={options.rounds === n} disabled={n < min} onclick={() => (options.rounds = n)}>{n}</button>
+    {/each}
   </div>
 </div>
 
 <style>
-  .mseg { display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; gap: 3px; background: var(--p-track); border-radius: 12px; width: 176px; flex: none; }
-  .mseg button { height: 34px; border-radius: 9px; font: 600 14px var(--f-ui); color: var(--p-muted); font-variant-numeric: tabular-nums; }
-  .mseg button.on { background: var(--p-thumb); color: var(--p-on-thumb); font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 14px 14px; }
+  .quick button { height: 36px; border-radius: 10px; background: var(--p-track); font: 700 14px var(--f-ui); color: var(--p-muted); font-variant-numeric: tabular-nums; }
+  .quick button.on { background: var(--p-thumb); color: var(--p-on-thumb); }
+  .quick button:disabled { opacity: .35; }
 </style>

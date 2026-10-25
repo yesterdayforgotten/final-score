@@ -1,9 +1,20 @@
 <script lang="ts">
   import Stepper from '../../components/Stepper.svelte';
   import type { OptionsProps } from '../types';
-  import type { SkOptions } from './rules';
+  import { firstCards, lastCards, MAX_CARDS, roundCount, type SkOptions } from './rules';
 
   let { options = $bindable() }: OptionsProps<SkOptions> = $props();
+
+  // Older games only had a round count; normalise to start/end.
+  $effect.pre(() => {
+    if (options.startCards == null || options.endCards == null) {
+      options.startCards = firstCards(options);
+      options.endCards = lastCards(options);
+      delete options.rounds;
+    }
+  });
+
+  const rounds = $derived(roundCount(options));
 </script>
 
 <div class="card">
@@ -15,8 +26,12 @@
     </span>
   </div>
   <div class="optrow">
-    <span>Rounds<small>Round n deals n cards</small></span>
-    <Stepper value={options.rounds} min={1} max={10} label="rounds" onchange={(v) => (options.rounds = v)} />
+    <span>First round<small>{options.startCards === 1 ? '1 card each' : `${options.startCards} cards each`}</small></span>
+    <Stepper value={options.startCards} min={1} max={options.endCards} label="cards in the first round" onchange={(v) => (options.startCards = v)} />
+  </div>
+  <div class="optrow">
+    <span>Last round<small>{options.endCards} cards each · {rounds} {rounds === 1 ? 'round' : 'rounds'} in all</small></span>
+    <Stepper value={options.endCards} min={options.startCards} max={MAX_CARDS} label="cards in the last round" onchange={(v) => (options.endCards = v)} />
   </div>
 </div>
 
