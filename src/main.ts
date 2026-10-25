@@ -1,6 +1,7 @@
 import '@fontsource-variable/plus-jakarta-sans';
 import '@fontsource/pirata-one';
 import '@fontsource-variable/fredoka';
+import '@fontsource/alfa-slab-one';
 import './app.css';
 import { mount } from 'svelte';
 import App from './App.svelte';

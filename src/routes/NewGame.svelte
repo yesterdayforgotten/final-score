@@ -105,7 +105,7 @@
     starting = true;
     void requestPersistence();
     const entries = Object.fromEntries(seats.map((p) => [p.id, def.emptyEntry()]));
-    const g = await createGame(def.id, seatIds, $state.snapshot(options), { entries, phase: def.firstPhase });
+    const g = await createGame(def.id, seatIds, $state.snapshot(options), { entries, phase: def.firstPhase, data: def.firstData?.() });
     go(`/play/${g.id}`, { replace: true });
   }
 

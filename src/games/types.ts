@@ -34,6 +34,8 @@ export interface Round<E = unknown> {
   index: number;
   /** Game-defined step within a round (Skull King: 'bids' | 'tricks'). */
   phase?: string;
+  /** Game-defined state shared by the whole round (Bank: the rolls). */
+  data?: any;
   entries: Record<string, E>;
   updatedAt: number;
 }
@@ -71,6 +73,8 @@ export interface GameDefinition<O = any, E = any> {
   emptyEntry: () => E;
   /** Initial phase for a new round, if the game uses phases. */
   firstPhase?: string;
+  /** Initial shared round state, if the game uses it. */
+  firstData?: () => unknown;
   /** Points for one player's entry in round `index`, or null while incomplete. */
   score: (entry: E, index: number, options: O) => number | null;
   roundComplete: (round: Round<E>, game: Game<O>) => boolean;

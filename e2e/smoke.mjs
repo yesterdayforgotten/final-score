@@ -140,6 +140,38 @@ await shot('11-f7-result');
 const ft = await page.locator('.total').allInnerTexts();
 await expect(JSON.stringify(ft) === JSON.stringify(['214', '77', '60']), `F7 final ${ft}`);
 
+
+// ---------- Bank ----------
+await page.goto(base + '#/');
+await page.getByRole('button', { name: /^Bank/ }).click();
+await page.getByRole('button', { name: 'New game' }).click();
+await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
+await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('text=Tap a player to bank');
+await page.getByRole('radio', { name: 'My dice' }).click();
+const key = (k) => page.locator('.keys, .keys2').getByRole('button', { name: k, exact: true });
+await key('7 · +70').click();
+await key('5').click();
+await key('6').click();
+await expect((await page.locator('.amt').innerText()) === '81', 'bank: 7 is +70 in the safe rolls');
+await page.locator('.pl', { hasText: 'Maya' }).click();
+await key('4').click();
+await key('Doubles ×2').click();
+await expect((await page.locator('.amt').innerText()) === '170', 'bank: doubles double after three rolls');
+await shot('13-bank-keypad');
+await page.locator('.pl', { hasText: 'Theo' }).click();
+await page.waitForSelector('text=Everyone banked');
+const bt = await page.locator('.tp .s').allInnerTexts();
+await expect(JSON.stringify(bt) === JSON.stringify(['81', '170']), `bank totals ${bt}`);
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.waitForSelector('text=Round 2 of 10');
+await page.getByRole('radio', { name: 'On-screen dice' }).click();
+await page.getByRole('button', { name: /Roll the dice/ }).click();
+await page.waitForTimeout(900);
+await expect((await page.locator('.hist .rc').count()) === 1, 'on-screen dice records a roll');
+await shot('14-bank-dice');
+
 // ---------- offline ----------
 await page.goto(base + '#/');
 await page.waitForTimeout(1500);

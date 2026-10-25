@@ -102,6 +102,7 @@
       gameId: game.id,
       index,
       phase: def.firstPhase,
+      data: def.firstData?.(),
       entries: Object.fromEntries(game.playerIds.map((pid) => [pid, def.emptyEntry()])),
       updatedAt: Date.now(),
     };
@@ -245,6 +246,7 @@
 <style>
   .gt { font-size: 44px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 38px; }
+  :global(.t-bank) .gt { font-size: 40px; letter-spacing: .02em; }
   .ut { font: 800 32px var(--f-ui) !important; letter-spacing: -.02em; color: var(--p-hdr-fg); }
   .dots { display: flex; gap: 5px; padding-bottom: 6px; }
   .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--p-hdr-chip-strong); transition: width .25s ease; }

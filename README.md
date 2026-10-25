@@ -1,6 +1,6 @@
 # Final Score
 
-An offline-first PWA for scoring board and card games on your phone. It currently supports **Skull King** and **Flip 7**.
+An offline-first PWA for scoring board and card games on your phone. It currently supports **Skull King**, **Flip 7** and **Bank**.
 
 - Choose a game to see past results, start a rematch with the same players, or start a new game. Names you've used before are suggested as you type.
 - Everything stays on the device in IndexedDB. There's no account, no server and no sync.
@@ -12,6 +12,7 @@ An offline-first PWA for scoring board and card games on your phone. It currentl
 | Game | Scoring |
 |---|---|
 | Skull King | **Classic:** 20 per trick bid, −10 per trick off. A zero bid scores ±10 × the round number. Bonuses count only when the bid is made: 14s, the black 14, captures, Loot. **Rascal:** points per card dealt, with Grapeshot (half points when off by one) or Cannonball (15 per card, all or nothing). |
+| Bank | The app is the bank. Enter rolls from your own dice, or tap the on-screen dice to roll. In the first three rolls a 7 adds 70; after that doubles double the bank and a 7 ends the round. Tap a player to bank their points. 10 rounds by default. |
 | Flip 7 | Type the score, tap **Bust**, or count it with the card picker. The x2 card doubles the number cards. Seven different numbers add +15. The game ends after the round in which someone reaches the target (200 by default). |
 
 ## Adding a game

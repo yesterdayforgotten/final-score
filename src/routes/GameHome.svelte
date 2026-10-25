@@ -110,6 +110,7 @@
 <style>
   .gt { font-size: 48px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 42px; }
+  :global(.t-bank) .gt { font-size: 46px; letter-spacing: .02em; }
   .stat { margin: 6px 0 0; padding: 0 calc(var(--gutter-r) + 6px) 0 calc(var(--gutter-l) + 6px); font: 600 13.5px var(--f-ui); color: var(--p-hdr-muted); position: relative; }
   .resume { padding: 16px; display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; }
   .t { flex: 1; min-width: 0; }
