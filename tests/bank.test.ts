@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bankState, rollFromDice, type Roll } from '../src/games/bank/rules';
+import { bankState, rollerSeat, rollFromDice, type BankEntry, type Roll } from '../src/games/bank/rules';
 
 const r = (sum: number, doubles = false): Roll => ({ sum, doubles });
 
@@ -28,5 +28,29 @@ describe('bank rolls', () => {
 
   it('starts empty', () => {
     expect(bankState([])).toEqual({ bank: 0, sevened: false, count: 0 });
+  });
+});
+
+describe('whose roll', () => {
+  const e = (at: number | null = null): BankEntry => ({ banked: at === null ? null : 10, at, busted: false });
+
+  it('goes round the table, starting one seat later each round', () => {
+    const four = [e(), e(), e(), e()];
+    expect(rollerSeat(0, four, 0)).toBe(0);
+    expect(rollerSeat(0, four, 1)).toBe(1);
+    expect(rollerSeat(0, four, 4)).toBe(0);
+    expect(rollerSeat(1, four, 0)).toBe(1);
+    expect(rollerSeat(5, four, 0)).toBe(1);
+  });
+
+  it('skips players who have banked', () => {
+    // Seat 1 banked after 1 roll: seat 0 rolled, then seat 1 is skipped.
+    expect(rollerSeat(0, [e(), e(1), e(), e()], 1)).toBe(2);
+    expect(rollerSeat(0, [e(), e(1), e(), e()], 3)).toBe(0);
+  });
+
+  it('moves on when the current roller banks', () => {
+    // Seat 2 was due to roll after 2 rolls, then banked.
+    expect(rollerSeat(0, [e(), e(), e(2), e()], 2)).toBe(3);
   });
 });

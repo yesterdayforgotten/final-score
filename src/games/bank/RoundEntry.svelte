@@ -3,7 +3,7 @@
   import Dice from '../../components/Dice.svelte';
   import Icon from '../../components/Icon.svelte';
   import type { RoundEntryProps } from '../types';
-  import { bankState, rollFromDice, rollLabel, SAFE_ROLLS, type BankEntry, type BankOptions, type Roll } from './rules';
+  import { bankState, rollerSeat, rollFromDice, rollLabel, SAFE_ROLLS, type BankEntry, type BankOptions, type Roll } from './rules';
 
   let { game, round = $bindable(), players, before, editing, onchange, onnext }: RoundEntryProps<BankOptions, BankEntry> = $props();
 
@@ -13,9 +13,9 @@
 
   function readMode(): 'dice' | 'keypad' {
     try {
-      return localStorage.getItem(MODE_KEY) === 'keypad' ? 'keypad' : 'dice';
+      return localStorage.getItem(MODE_KEY) === 'dice' ? 'dice' : 'keypad';
     } catch {
-      return 'dice';
+      return 'keypad';
     }
   }
 
@@ -36,6 +36,8 @@
   const safe = $derived(st.count < SAFE_ROLLS);
   const nextRoll = $derived(st.count + 1);
   const banked = $derived(players.filter((p) => round.entries[p.id].banked !== null));
+  const roller = $derived(over ? null : players[rollerSeat(round.index, entries, st.count)]);
+  const upNext = $derived(over ? null : players[rollerSeat(round.index, entries, st.count + 1)]);
 
   function changed() {
     onchange();
@@ -92,7 +94,18 @@
   const KEYS = [2, 3, 4, 5, 6, 8, 9, 10, 11, 12];
 </script>
 
-<div class="card lift bankcard" class:bust={st.sevened}>
+{#if roller}
+  <div class="turn" aria-live="polite">
+    <Avatar player={roller} size={46} />
+    <div class="tw">
+      <small>Roll {nextRoll}{safe ? ' · safe' : ''}</small>
+      <b>{roller.name}'s roll</b>
+    </div>
+    {#if upNext && upNext.id !== roller.id}<span class="nx">Next<br /><em>{upNext.name}</em></span>{/if}
+  </div>
+{/if}
+
+<div class="card bankcard" class:lift={!roller} class:bust={st.sevened}>
   <span class="lbl">{st.sevened ? 'Seven! Bank lost' : 'Bank'}</span>
   <span class="amt num">{st.bank.toLocaleString()}</span>
   <span class="hint">
@@ -112,10 +125,10 @@
 <div class="grid">
   {#each players as p (p.id)}
     {@const e = round.entries[p.id]}
-    <button class="pl card" class:in={e.banked !== null} class:out={e.busted} disabled={st.sevened || (e.banked === null && st.bank <= 0) || (e.banked !== null && e.at !== st.count)} onclick={() => toggleBank(e)}>
+    <button class="pl card" class:rolling={roller?.id === p.id} class:in={e.banked !== null} class:out={e.busted} disabled={st.sevened || (e.banked === null && st.bank <= 0) || (e.banked !== null && e.at !== st.count)} onclick={() => toggleBank(e)}>
       <Avatar player={p} size={34} />
       <span class="who">
-        <span class="nm">{p.name}</span>
+        <span class="nm">{p.name}{#if roller?.id === p.id}<span class="dice-tag">Rolling</span>{/if}</span>
         <span class="st num">
           {#if e.banked !== null}<Icon name="check" size={13} stroke={3} />+{e.banked.toLocaleString()}
           {:else if e.busted}Busted
@@ -154,7 +167,10 @@
       <p class="tap">Tap the dice to roll</p>
     {:else}
       <div class="keys">
-        {#each KEYS as k}<button class="key num" onclick={() => addRoll({ sum: k, doubles: false })}>{k}</button>{/each}
+        {#each KEYS as k}
+          {@const onlyDoubles = !safe && (k === 2 || k === 12)}
+          <button class="key num" disabled={onlyDoubles} aria-label={onlyDoubles ? `${k} is always doubles: use Doubles` : String(k)} onclick={() => addRoll({ sum: k, doubles: false })}>{k}</button>
+        {/each}
       </div>
       <div class="keys2">
         <button class="key seven" class:safe onclick={() => addRoll({ sum: 7, doubles: false })}>7{safe ? ' · +70' : ''}</button>
@@ -165,7 +181,20 @@
 </div>
 
 <style>
-  .bankcard { margin-top: 4px; padding: 18px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .turn {
+    margin-top: 4px; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 12px; border-radius: 22px;
+    background: var(--p-cta); color: var(--p-on-cta); box-shadow: var(--p-shadow-lift);
+  }
+  .turn :global(.av) { box-shadow: 0 0 0 3px var(--p-gold); }
+  .tw { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .tw small { font: 700 11.5px var(--f-ui); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+  .tw b { font: 800 22px var(--f-ui); letter-spacing: -.02em; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nx { font: 600 11.5px var(--f-ui); text-align: right; opacity: .75; line-height: 1.25; flex: none; }
+  .nx em { font-style: normal; font-weight: 800; font-size: 14px; opacity: 1; }
+  .pl.rolling { box-shadow: inset 0 0 0 2px var(--p-gold), var(--p-shadow); }
+  .dice-tag { margin-left: 6px; font: 800 10px var(--f-ui); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; background: var(--p-gold-soft); color: var(--p-gold-text); vertical-align: 2px; }
+  .key:disabled { opacity: .3; }
+  .bankcard { margin-top: 0; padding: 18px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
   .lbl { font: 700 12px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--p-muted); }
   .amt { font: 400 60px var(--f-bank); line-height: 1.05; color: var(--p-accent-text); letter-spacing: .01em; }
   .bust .amt { color: var(--p-bad); }

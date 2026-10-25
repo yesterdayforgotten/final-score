@@ -72,3 +72,25 @@ export function rollLabel(r: Roll, index: number): string {
   if (r.doubles) return r.sum ? `${r.sum} ×2` : '×2';
   return String(r.sum);
 }
+
+/**
+ * Seat index of whoever rolls next. Turns go round the table in seat order, starting one seat
+ * further on each round, and skip anyone who has already banked.
+ */
+export function rollerSeat(roundIndex: number, entries: BankEntry[], count: number): number {
+  const n = entries.length;
+  const out = (seat: number, rolls: number) => {
+    const e = entries[seat];
+    return e.at !== null && e.at <= rolls;
+  };
+  const advance = (from: number, rolls: number) => {
+    for (let k = 1; k <= n; k++) {
+      const s = (from + k) % n;
+      if (!out(s, rolls)) return s;
+    }
+    return from;
+  };
+  let seat = roundIndex % n;
+  for (let j = 1; j <= count; j++) seat = advance(seat, j);
+  return out(seat, count) ? advance(seat, count) : seat;
+}
