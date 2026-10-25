@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - name: End-to-end (headless Chromium)
+        # ubuntu-latest ships Google Chrome.
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          sleep 2
+          CHROMIUM=/usr/bin/google-chrome node e2e/smoke.mjs http://localhost:4173/ e2e/shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: e2e/shots
+          if-no-files-found: ignore

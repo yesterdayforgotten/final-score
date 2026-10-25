@@ -1,0 +1,9 @@
+# Portainer stack. Put an HTTPS reverse proxy in front: phones only install
+# and run PWAs offline over HTTPS.
+services:
+  scorekeeper:
+    image: ghcr.io/yesterdayforgotten/scorekeeper:latest
+    container_name: scorekeeper
+    restart: unless-stopped
+    ports:
+      - "8092:80"
