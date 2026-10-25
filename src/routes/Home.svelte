@@ -135,7 +135,7 @@
   .big { padding: 6px calc(var(--gutter-r) + 8px) 0 calc(var(--gutter-l) + 8px); }
   .big small { font: 600 13px var(--f-ui); color: var(--p-muted); text-transform: uppercase; letter-spacing: .08em; }
   .big h1 { margin: 2px 0 0; font: 800 36px var(--f-ui); letter-spacing: -.03em; line-height: 1.05; }
-  .content { gap: 14px; padding-top: 12px; }
+  .content { gap: 12px; padding-top: 12px; }
   .resume { padding: 16px; display: flex; flex-direction: column; gap: 14px; background: var(--p-surface); color: var(--p-fg); }
   .top { display: flex; align-items: center; gap: 12px; }
   .t { flex: 1; min-width: 0; }
@@ -145,32 +145,32 @@
   .avs { display: flex; }
   .avs :global(.av + .av) { margin-left: -7px; }
   .gtile {
-    position: relative; border-radius: 28px; overflow: hidden; height: 176px; padding: 20px; width: 100%;
-    display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; text-align: left;
-    box-shadow: 0 18px 30px -18px rgba(0,0,0,.45); transition: transform .15s ease;
+    position: relative; border-radius: 24px; overflow: hidden; height: 104px; padding: 14px 18px; width: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left;
+    box-shadow: 0 14px 24px -16px rgba(0,0,0,.45); transition: transform .15s ease;
   }
   .gtile:active { transform: scale(.985); }
-  .gtile h2 { margin: 0; line-height: .95; font-weight: 700; position: relative; }
-  .meta { font: 600 13px var(--f-ui); opacity: .85; margin-top: 6px; position: relative; }
-  .go { position: absolute; right: 18px; bottom: 18px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); }
-  .art { position: absolute; right: 22px; top: 16px; }
+  .gtile h2 { margin: 0; line-height: 1; font-weight: 700; position: relative; font-size: 30px; }
+  .meta { font: 600 12.5px var(--f-ui); opacity: .85; margin-top: 5px; position: relative; }
+  .go { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); }
+  /* Artwork shrunk and parked just left of the arrow. */
+  .art { position: absolute; right: 60px; top: 50%; transform: translateY(-50%) scale(.6); transform-origin: right center; pointer-events: none; }
   .tile-skull-king { background: radial-gradient(120% 90% at 85% 10%, #2c4677 0%, #16233f 55%, #0d1629 100%); color: #f3e7c6; }
-  .tile-skull-king h2 { font-size: 46px; font-weight: 400; }
-  .tile-skull-king .art { width: 112px; height: 112px; color: #d4a12a; filter: drop-shadow(0 10px 20px rgba(0,0,0,.35)); }
+  .tile-skull-king h2 { font-size: 34px; font-weight: 400; }
+  .tile-skull-king .art { width: 112px; height: 112px; color: #d4a12a; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }
   .tile-skull-king .art :global(svg) { width: 100%; height: 100%; }
   .tile-flip7 { background: radial-gradient(120% 100% at 90% 0%, #ffd34d 0%, #ffb02e 45%, #ff7a3d 100%); color: #2a1a3e; }
-  .tile-flip7 h2 { font-size: 40px; letter-spacing: -.01em; }
-  .tile-flip7 .art { right: 40px; top: 10px; }
+  .tile-flip7 h2 { letter-spacing: -.01em; }
   .tile-flip7 .go { background: rgba(42,26,62,.12); }
   .tile-herd { background: radial-gradient(120% 100% at 85% 0%, #ffa3cb 0%, #ff5fa2 45%, #c2256f 100%); color: #fff; }
-  .tile-herd h2 { font-size: 40px; font-weight: 400; letter-spacing: .01em; max-width: 60%; }
-  .tile-herd .art { right: 18px; top: 14px; }
+  .tile-herd h2 { font-weight: 400; letter-spacing: .01em; font-size: 27px; }
+  .tile-herd .art { transform: translateY(-50%) scale(.5); right: 56px; }
   .tile-any { background: radial-gradient(120% 100% at 85% 0%, #7d8cff 0%, #4b5bd6 50%, #232c80 100%); color: #fff; }
-  .tile-any h2 { font-size: 38px; font-weight: 800; letter-spacing: -.02em; }
-  .tile-any .art { right: 30px; top: 12px; width: 130px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.3)); }
+  .tile-any h2 { font-weight: 800; letter-spacing: -.02em; }
+  .tile-any .art { width: 130px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.3)); }
   .tile-any .art :global(svg) { width: 100%; height: auto; display: block; }
   .tile-bank { background: radial-gradient(120% 100% at 85% 0%, #23966b 0%, #11573f 50%, #08291e 100%); color: #f6ecc9; }
-  .tile-bank h2 { font-size: 46px; font-weight: 400; letter-spacing: .02em; }
-  .tile-bank .art { right: 26px; top: 18px; width: 150px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.35)); }
+  .tile-bank h2 { font-size: 32px; font-weight: 400; letter-spacing: .02em; }
+  .tile-bank .art { width: 150px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }
   .tile-bank .art :global(svg) { width: 100%; height: auto; display: block; }
 </style>
