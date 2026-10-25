@@ -29,6 +29,14 @@
     onchange();
   }
 
+  // Once the entered tricks account for every card, anyone still blank took none.
+  function setTricks(e: SkEntry, v: number) {
+    e.tricks = v;
+    const all = players.map((p) => round.entries[p.id]);
+    const sum = all.reduce((a, x) => a + (x.tricks ?? 0), 0);
+    if (sum >= n) for (const x of all) if (x.tricks === null) x.tricks = 0;
+  }
+
   function setPhase(p: 'bids' | 'tricks') {
     set(() => (round.phase = p));
     document.querySelector('.content')?.scrollTo({ top: 0 });
@@ -109,7 +117,7 @@
           </div>
         {/if}
       </div>
-      <Seg max={n} value={e.tricks} mark={e.bid} label="{p.name}'s tricks" onselect={(v) => set(() => (e.tricks = v))} />
+      <Seg max={n} value={e.tricks} mark={e.bid} label="{p.name}'s tricks" onselect={(v) => set(() => setTricks(e, v))} />
       {#if counts}
         {@const tags = bonusSummary(e)}
         <button class="disc" aria-expanded={!!open[p.id]} onclick={() => (open[p.id] = !open[p.id])}>

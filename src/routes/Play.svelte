@@ -7,7 +7,7 @@
   import TotalsStrip from '../components/TotalsStrip.svelte';
   import { gameById } from '../games/registry';
   import type { Game, Player, Round } from '../games/types';
-  import { deleteGame, deleteRoundsFrom, getGame, getPlayers, getRounds, saveGame, saveRound } from '../lib/db';
+  import { deleteGame, deleteRoundsFrom, getGame, getPlayers, getRounds, renamePlayer, saveGame, saveRound } from '../lib/db';
   import { completedRounds, leaders, standings, totals } from '../lib/engine';
   import { fmtDay, fmtDuration, plural } from '../lib/format';
   import { back, go, route } from '../lib/router.svelte';
@@ -22,7 +22,32 @@
   let players = $state<Player[]>([]);
   let missing = $state(false);
   let menu = $state(false);
-  let confirm = $state<'end' | 'delete' | 'settings' | null>(null);
+  let confirm = $state<'end' | 'delete' | 'settings' | 'rename' | null>(null);
+  let renaming = $state<Player | null>(null);
+  let newName = $state('');
+  let renameError = $state('');
+
+  function startRename(p: Player) {
+    renaming = p;
+    newName = p.name;
+    renameError = '';
+    confirm = 'rename';
+    menu = true;
+  }
+
+  async function saveRename(e?: Event) {
+    e?.preventDefault();
+    if (!renaming) return;
+    const res = await renamePlayer(renaming.id, newName);
+    if (!res.ok) {
+      renameError = res.reason;
+      return;
+    }
+    const p = players.find((x) => x.id === renaming!.id);
+    if (p) p.name = newName.trim().replace(/\s+/g, ' ');
+    renaming = null;
+    closeMenu();
+  }
 
   const def = $derived(game ? gameById(game.gameType) : undefined);
   const board = $derived(route.path[2] === 'board');
@@ -186,7 +211,7 @@
         {/if}
       {/snippet}
       {#if view === 'round'}
-        <TotalsStrip {players} totals={t} leaders={lead} target={def.progress.kind === 'target' ? def.progress.target(game.options) : undefined} />
+        <TotalsStrip {players} totals={t} leaders={lead} target={def.progress.kind === 'target' ? def.progress.target(game.options) : undefined} onpick={startRename} />
       {/if}
     </Band>
 
@@ -235,7 +260,23 @@
     {/if}
 
     <Sheet open={menu} onclose={closeMenu} label="Game options">
-      {#if confirm === 'settings'}
+      {#if confirm === 'rename'}
+        {#if renaming}
+          <form class="rn" onsubmit={saveRename}>
+            <p class="q"><b>Rename {renaming.name}</b>The new name shows everywhere, including past games.</p>
+            <input class="field" bind:value={newName} maxlength="24" autocapitalize="words" aria-label="New name" />
+            {#if renameError}<p class="err">{renameError}</p>{/if}
+            <div class="row"><button type="button" class="cta soft" onclick={closeMenu}>Cancel</button><button type="submit" class="cta">Save</button></div>
+          </form>
+        {:else}
+          <p class="q"><b>Rename a player</b>Pick who to rename.</p>
+          <div class="menu">
+            {#each players as p (p.id)}
+              <button onclick={() => startRename(p)}><Avatar player={p} size={30} />{p.name}</button>
+            {/each}
+          </div>
+        {/if}
+      {:else if confirm === 'settings'}
         <p class="q"><b>Game settings</b>Changes apply from the round you're on.</p>
         <def.Options bind:options={game.options} inGame={{ currentRound: lastIndex + 1 }} />
         <button class="cta" style="flex: none" onclick={closeMenu}>Done</button>
@@ -249,8 +290,9 @@
         <Settings />
         <div class="menu">
           {#if !finished && def.midGameOptions}
-            <button onclick={() => (confirm = 'settings')}><Icon name="edit" />{def.progress.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
+            <button onclick={() => (confirm = 'settings')}><Icon name="grid" />{def.progress.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
           {/if}
+          <button onclick={() => ((renaming = null), (confirm = 'rename'))}><Icon name="edit" />Rename a player</button>
           {#if !finished}
             <button onclick={() => (confirm = 'end')}><Icon name="flag" />End game now</button>
           {/if}
@@ -287,4 +329,8 @@
   .q { margin: 4px 4px 0; font: 500 14.5px var(--f-ui); color: var(--p-muted); }
   .q b { display: block; font: 800 18px var(--f-ui); color: var(--p-fg); margin-bottom: 4px; }
   .row { display: flex; gap: 10px; }
+  .rn { display: flex; flex-direction: column; gap: 14px; }
+  .field { height: 52px; border-radius: 14px; border: 0; padding: 0 14px; font: 600 17px var(--f-ui); background: var(--p-track); color: var(--p-fg); outline: none; }
+  .field:focus { box-shadow: 0 0 0 2px var(--p-accent); background: var(--p-surface); }
+  .err { margin: -6px 4px 0; font: 600 13px var(--f-ui); color: var(--p-bad); }
 </style>

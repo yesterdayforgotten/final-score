@@ -7,13 +7,14 @@
     totals,
     leaders,
     target,
-  }: { players: Player[]; totals: Record<string, number>; leaders: string[]; target?: number } = $props();
+    onpick,
+  }: { players: Player[]; totals: Record<string, number>; leaders: string[]; target?: number; onpick?: (p: Player) => void } = $props();
 </script>
 
 <div class="totals" style:--n={players.length}>
   {#each players as p (p.id)}
     {@const lead = leaders.includes(p.id)}
-    <div class="tp" class:lead>
+    <button class="tp" class:lead disabled={!onpick} aria-label="{p.name}, {totals[p.id] ?? 0} points{onpick ? '. Tap to rename' : ''}" onclick={() => onpick?.(p)}>
       {#if lead}
         <svg class="crown" viewBox="0 0 20 14" aria-label="Leading"><path fill="currentColor" d="M1 3.5l4.5 4L10 0l4.5 7.5L19 3.5 17.2 14H2.8z" /></svg>
       {/if}
@@ -24,7 +25,7 @@
       {:else}
         <span class="n">{p.name}</span>
       {/if}
-    </div>
+    </button>
   {/each}
 </div>
 
@@ -35,7 +36,8 @@
     overflow-x: auto; scrollbar-width: none;
   }
   .totals::-webkit-scrollbar { display: none; }
-  .tp { border-radius: 18px; padding: 10px 6px 9px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--p-hdr-chip); position: relative; margin-top: 8px; min-width: 0; }
+  .tp:disabled { cursor: default; }
+  .tp { color: inherit; border-radius: 18px; padding: 10px 6px 9px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--p-hdr-chip); position: relative; margin-top: 8px; min-width: 0; }
   .tp :global(.av) { box-shadow: 0 0 0 2px var(--p-hdr-2); }
   .s { font: 800 19px var(--f-ui); letter-spacing: -.01em; line-height: 1; transition: color .2s; }
   .n { font: 600 11.5px var(--f-ui); color: var(--p-hdr-muted); line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

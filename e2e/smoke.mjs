@@ -62,7 +62,9 @@ async function skRound(bids, tricks, bonus) {
 }
 
 // Round 1 (1 card): Maya bid 1 took 1 (+20), Theo 0/0 (+10), Jules 1/0 (−10), Priya 0/0 (+10)
-await skRound({ Maya: 1, Theo: 0, Jules: 1, Priya: 0 }, { Maya: 1, Theo: 0, Jules: 0, Priya: 0 });
+await skRound({ Maya: 1, Theo: 0, Jules: 1, Priya: 0 }, { Maya: 1 });
+for (const n of ['Theo', 'Jules', 'Priya'])
+  await expect((await page.getByRole('radiogroup', { name: `${n}'s tricks` }).getByRole('radio', { name: '0', exact: true }).getAttribute('aria-checked')) === 'true', `${n}'s tricks fill in as 0 once the total is met`);
 await page.getByRole('button', { name: /Next round/ }).click();
 // Round 2 (2 cards): Jules bid 1 took 1 + Skull King taken by mermaid (+40) = 60
 await page.waitForSelector('text=Round 2 of 10');
@@ -97,6 +99,17 @@ await tap(page.getByRole('radiogroup', { name: "Jules's tricks" }).getByRole('ra
 await tap(page.getByRole('radiogroup', { name: "Maya's tricks" }).getByRole('radio', { name: '0', exact: true }));
 await page.getByRole('button', { name: 'Done' }).click();
 await page.waitForSelector('text=Round 3 of 10');
+// Rename mid-game by tapping a score tile
+await page.getByRole('button', { name: /^Priya, .*Tap to rename/ }).click();
+await page.getByLabel('New name').fill('Priyanka');
+await page.getByRole('button', { name: 'Save' }).click();
+await page.waitForSelector('.pc >> text=Priyanka');
+await expect(true, 'rename a player mid-game');
+await page.getByRole('button', { name: /^Priyanka, .*Tap to rename/ }).click();
+await page.getByLabel('New name').fill('Priya');
+await page.getByRole('button', { name: 'Save' }).click();
+await page.waitForSelector('.pc >> text=Priya');
+await page.waitForTimeout(300);
 const t2 = await page.locator('.tp .s').allInnerTexts();
 await expect(JSON.stringify(t2) === JSON.stringify(['10', '30', '80', '0']), `SK totals after editing round 1 ${t2}`);
 
