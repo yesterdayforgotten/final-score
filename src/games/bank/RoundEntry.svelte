@@ -36,7 +36,31 @@
   const safe = $derived(st.count < SAFE_ROLLS);
   const nextRoll = $derived(st.count + 1);
   const banked = $derived(players.filter((p) => round.entries[p.id].banked !== null));
+  // Game totals including anything banked this round, and the gap to the leader.
+  const live = $derived(Object.fromEntries(players.map((p) => [p.id, (before[p.id] ?? 0) + (round.entries[p.id].banked ?? 0)])));
+  const top = $derived(Math.max(...Object.values(live)));
   const roller = $derived(over ? null : players[rollerSeat(round.index, entries, st.count)]);
+
+  // Big confirmation of each roll, shown over everything for about a second.
+  let flash = $state<{ id: number; big: string; sub: string; tone: 'add' | 'dbl' | 'bust' } | null>(null);
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function showFlash(r: Roll, index: number, after: number, sevened: boolean) {
+    let big: string;
+    let tone: 'add' | 'dbl' | 'bust' = 'add';
+    if (sevened) {
+      big = '7';
+      tone = 'bust';
+    } else if (index < SAFE_ROLLS) big = r.sum === 7 ? '+70' : `+${r.sum}`;
+    else if (r.doubles) {
+      big = '×2';
+      tone = 'dbl';
+    } else big = `+${r.sum}`;
+    const sub = sevened ? 'Bust! Round over' : `${tone === 'dbl' ? 'Doubles · ' : ''}Bank ${after.toLocaleString()}`;
+    flash = { id: (flash?.id ?? 0) + 1, big, sub, tone };
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => (flash = null), 1100);
+  }
 
   function changed() {
     onchange();
@@ -46,7 +70,10 @@
     if (over) return;
     round.data ??= { rolls: [] };
     round.data.rolls = [...rolls, r];
-    if (bankState(round.data.rolls).sevened) {
+    const after = bankState(round.data.rolls);
+    showFlash(r, rolls.length, after.bank, after.sevened);
+    navigator.vibrate?.(10);
+    if (after.sevened) {
       for (const p of players) {
         const e = round.entries[p.id];
         if (e.banked === null) e.busted = true;
@@ -132,12 +159,28 @@
           {:else if e.busted}Busted
           {:else}{(before[p.id] ?? 0).toLocaleString()} total{/if}
         </span>
+        {#if top > 0}
+          {#if live[p.id] === top}
+            <span class="gap lead"><svg viewBox="0 0 20 14" aria-hidden="true"><path fill="currentColor" d="M1 3.5l4.5 4L10 0l4.5 7.5L19 3.5 17.2 14H2.8z" /></svg>Leading · {top.toLocaleString()}</span>
+          {:else}
+            <span class="gap num">−{(top - live[p.id]).toLocaleString()} behind</span>
+          {/if}
+        {/if}
       </span>
     </button>
   {/each}
 </div>
 
 <div class="spacer" aria-hidden="true"></div>
+
+{#if flash}
+  {#key flash.id}
+    <div class="flash {flash.tone}" role="status" aria-live="assertive">
+      <span class="fb num">{flash.big}</span>
+      <span class="fs num">{flash.sub}</span>
+    </div>
+  {/key}
+{/if}
 
 <div class="pad">
   {#if over}
@@ -208,8 +251,36 @@
   .nm { font: 700 15px var(--f-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .st { font: 600 12.5px var(--f-ui); color: var(--p-muted); display: flex; align-items: center; gap: 3px; }
   .in .st { color: var(--p-good); font-weight: 800; }
+  .gap { font: 700 12px var(--f-ui); color: var(--p-bad); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+  .gap.lead { color: var(--p-gold-text); }
+  .gap svg { width: 13px; height: 10px; }
   .out .st { color: var(--p-bad); }
   .spacer { height: 190px; }
+
+  .flash {
+    position: fixed; left: 50%; top: 42%; z-index: 30; pointer-events: none;
+    transform: translate(-50%, -50%);
+    min-width: 200px; padding: 18px 34px 20px; border-radius: 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: var(--p-cta); background: color-mix(in srgb, var(--p-cta) 94%, transparent); color: var(--p-on-cta);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.55);
+    animation: flash 1.1s cubic-bezier(.2,.9,.3,1.2) forwards;
+  }
+  .flash.dbl { background: var(--p-gold); background: color-mix(in srgb, var(--p-gold) 96%, transparent); color: #2a1e05; }
+  .flash.bust { background: var(--p-bad); background: color-mix(in srgb, var(--p-bad) 96%, transparent); color: #fff; }
+  .fb { font: 400 104px var(--f-bank); line-height: 1; letter-spacing: .01em; }
+  .fs { font: 800 16px var(--f-ui); letter-spacing: .02em; opacity: .9; white-space: nowrap; }
+  @keyframes flash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+    14% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+    24% { transform: translate(-50%, -50%) scale(1); }
+    78% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(.96); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flash { animation: fade 1.1s linear forwards; }
+    @keyframes fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  }
 
   .pad {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 3;
