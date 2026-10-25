@@ -8,7 +8,7 @@ class ScoreDB extends Dexie {
   games!: EntityTable<Game, 'id'>;
   rounds!: EntityTable<Round, 'id'>;
 
-  constructor(name = 'scorekeeper') {
+  constructor(name = 'final-score') {
     super(name);
     this.version(1).stores({
       players: 'id, &nameKey, lastUsedAt',

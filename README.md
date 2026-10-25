@@ -1,4 +1,4 @@
-# Scorekeeper
+# Final Score
 
 An offline-first PWA for scoring board and card games on your phone. It currently supports **Skull King** and **Flip 7**.
 
@@ -39,7 +39,7 @@ npm run e2e          # headless Chromium walkthrough; screenshots in e2e/shots
 
 ## Deploy
 
-Pushing to `main` builds `ghcr.io/yesterdayforgotten/scorekeeper:latest`, as set up in `.github/workflows/docker.yml`. Run it with `docker-compose.yml`, which serves nginx on port 8092.
+Pushing to `main` builds `ghcr.io/yesterdayforgotten/final-score:latest`, as set up in `.github/workflows/docker.yml`. Run it with `docker-compose.yml`, which serves nginx on port 8092.
 
 Phones only install and run PWAs offline over **HTTPS**, so put the container behind a TLS reverse proxy. For example, Apache:
 

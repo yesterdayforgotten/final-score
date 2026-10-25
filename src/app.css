@@ -1,4 +1,4 @@
-/* Scorekeeper design system: tokens per theme (base / Skull King / Flip 7), dark via prefers-color-scheme. */
+/* Final Score design system: tokens per theme (base / Skull King / Flip 7), dark via prefers-color-scheme. */
 
 :root {
   --f-ui: 'Plus Jakarta Sans Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;

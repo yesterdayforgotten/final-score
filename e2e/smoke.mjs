@@ -30,7 +30,7 @@ const expect = async (cond, msg) => { if (!(await cond)) throw new Error('FAILED
 const text = () => page.locator('body').innerText();
 
 await page.goto(base);
-await page.waitForSelector('text=Scorekeeper');
+await page.waitForSelector('text=Final Score');
 await shot('01-home-empty');
 
 // ---------- Skull King ----------
@@ -145,7 +145,7 @@ await page.goto(base + '#/');
 await page.waitForTimeout(1500);
 await ctx.setOffline(true);
 await page.reload();
-await page.waitForSelector('text=Scorekeeper');
+await page.waitForSelector('text=Final Score');
 await page.getByRole('button', { name: /Flip 7/ }).click();
 await expect(page.waitForSelector('text=Past games').then(() => true), 'works offline with saved history');
 await shot('12-offline-f7home');

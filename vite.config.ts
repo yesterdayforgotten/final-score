@@ -12,8 +12,8 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Scorekeeper',
-        short_name: 'Scorekeeper',
+        name: 'Final Score',
+        short_name: 'Final Score',
         description: 'Score Skull King, Flip 7 and more. Works offline.',
         start_url: '/',
         scope: '/',

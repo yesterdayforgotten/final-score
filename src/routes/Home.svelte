@@ -44,7 +44,7 @@
 
 <div class="screen t-base">
   <Band plain>
-    <div class="big"><small>{today}</small><h1>Scorekeeper</h1></div>
+    <div class="big"><small>{today}</small><h1>Final Score</h1></div>
   </Band>
   <main class="content flat">
     {#each resumes as r (r.game.id)}
