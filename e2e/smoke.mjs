@@ -293,7 +293,7 @@ await page.getByRole('button', { name: /Any game/ }).click();
 await page.getByRole('button', { name: 'New game' }).click();
 await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
 await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
-await page.getByLabel('Game name').fill('Hearts');
+await page.getByLabel('What are you playing?').fill('Hearts');
 await tap(page.getByRole('radio', { name: 'Lowest score' }));
 await tap(page.getByRole('radio', { name: 'At a score' }));
 await page.getByLabel('Target score').fill('50');
@@ -311,6 +311,12 @@ await page.getByLabel("Theo's score", { exact: true }).fill('10');
 await page.getByRole('button', { name: 'Finish game' }).click();
 await page.waitForSelector('text=Theo wins');
 await expect(true, 'any game: lowest total wins when someone reaches the target');
+await page.goto(base + '#/g/any/new');
+await page.locator('.names').getByRole('button', { name: 'Hearts' }).click();
+await expect((await page.getByLabel('What are you playing?').inputValue()) === 'Hearts', 'any game suggests names used before');
+await expect((await page.getByRole('radio', { name: 'Lowest score' }).getAttribute('aria-checked')) === 'true', 'picking a past name brings back its settings');
+await page.waitForSelector('text=New Hearts game');
+await shot('19a-any-name');
 
 // ---------- long-press an in-progress game on home ----------
 await page.goto(base + '#/');

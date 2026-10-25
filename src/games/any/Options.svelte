@@ -13,12 +13,6 @@
 </script>
 
 <div class="card">
-  {#if !inGame}
-    <label class="optrow name">
-      <span>Game<small>Shown in the header and history</small></span>
-      <input bind:value={options.title} placeholder="Uno, Hearts, Rummy…" maxlength="28" autocapitalize="words" aria-label="Game name" />
-    </label>
-  {/if}
   <div class="optrow col">
     <span>Winner</span>
     <span class="seg2" role="radiogroup" aria-label="Winner">
@@ -55,8 +49,6 @@
 </div>
 
 <style>
-  .name input { flex: 1; min-width: 0; max-width: 60%; height: 42px; border: 0; border-radius: 12px; padding: 0 12px; background: var(--p-track); font: 600 15px var(--f-ui); color: var(--p-fg); text-align: right; outline: none; }
-  .name input:focus { box-shadow: 0 0 0 2px var(--p-accent); background: var(--p-surface); text-align: left; }
   .col { flex-direction: column; align-items: stretch; gap: 8px; }
   .seg2, .seg3 { display: grid; padding: 3px; gap: 3px; background: var(--p-track); border-radius: 12px; }
   .seg2 { grid-template-columns: 1fr 1fr; }

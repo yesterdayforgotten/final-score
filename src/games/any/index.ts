@@ -22,6 +22,7 @@ export const anyGame: GameDefinition<AnyOptions, AnyEntry> = {
   progress: (o) => (o.end === 'rounds' ? { kind: 'rounds', max: o.rounds } : o.end === 'target' ? { kind: 'target', target: o.target } : { kind: 'open' }),
   lowWins: (o) => o.lowWins,
   displayName,
+  customName: { key: 'title', placeholder: 'Uno, Hearts, Rummy…' },
   RoundEntry,
   Options,
   midGameOptions: true,

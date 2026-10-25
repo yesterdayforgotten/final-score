@@ -108,6 +108,8 @@ export interface GameDefinition<O = any, E = any> {
   lowWins?: (o: O) => boolean;
   /** Name shown for a particular game, when players name it themselves. */
   displayName?: (o: O) => string;
+  /** Players name each game: the option holding the name, asked for at the top of the new-game screen. */
+  customName?: { key: keyof O & string; placeholder: string };
   RoundEntry: Component<RoundEntryProps<O, E>>;
   Options: Component<OptionsProps<O>>;
   /** Options can be changed during a game (the Options component honours `inGame`). */

@@ -4,7 +4,7 @@
   import Icon from '../components/Icon.svelte';
   import ThemeButton from '../components/ThemeButton.svelte';
   import type { GameDefinition, Player } from '../games/types';
-  import { createGame, findOrCreatePlayer, getGame, getPlayers, nameKey, requestPersistence, suggestPlayers, type Suggestion } from '../lib/db';
+  import { createGame, findOrCreatePlayer, getGame, getPlayers, listGames, nameKey, requestPersistence, suggestPlayers, type Suggestion } from '../lib/db';
   import { fmtShort } from '../lib/format';
   import { back, go } from '../lib/router.svelte';
   import { setThemeColor } from '../lib/theme';
@@ -21,6 +21,38 @@
   let recents = $state<Suggestion[]>([]);
   let starting = $state(false);
   let input: HTMLInputElement | undefined = $state();
+
+  // Games the players name themselves: names used before, most recent first.
+  const nameKeyOpt = $derived(def.customName?.key);
+  let pastNames = $state<string[]>([]);
+  // Settings from the most recent game with each name, so picking a name brings them back.
+  let pastOptions = new Map<string, unknown>();
+  $effect(() => {
+    if (!nameKeyOpt) return;
+    listGames(def.id).then((gs) => {
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const g of gs) {
+        const n = String((g.options as Record<string, unknown>)[nameKeyOpt] ?? '').trim();
+        if (n && !seen.has(n.toLowerCase())) {
+          seen.add(n.toLowerCase());
+          out.push(n);
+          pastOptions.set(n.toLowerCase(), g.options);
+        }
+      }
+      pastNames = out.slice(0, 8);
+    });
+  });
+  const gameName = $derived(nameKeyOpt ? String((options as Record<string, unknown>)[nameKeyOpt] ?? '') : '');
+  function setName(v: string) {
+    if (nameKeyOpt) (options as Record<string, unknown>)[nameKeyOpt] = v;
+  }
+
+  function pickName(n: string) {
+    const prev = pastOptions.get(n.toLowerCase());
+    if (prev) options = structuredClone(prev) as typeof options;
+    setName(n);
+  }
 
   const full = $derived(seats.length >= def.maxPlayers);
   const seatIds = $derived(seats.map((p) => p.id));
@@ -124,12 +156,23 @@
   <Band onback={() => back(`/g/${def.id}`)} backIcon="x" backLabel="Cancel" mid={def.name}>
     {#snippet art()}<def.Art />{/snippet}
     {#snippet right()}<ThemeButton />{/snippet}
-    {#snippet title()}<h1 class="h">New game</h1>{/snippet}
+    {#snippet title()}<h1 class="h">{gameName.trim() ? `New ${gameName.trim()} game` : 'New game'}</h1>{/snippet}
   </Band>
 
   <main class="content">
+    {#if def.customName}
+      <div class="card lift gname">
+        <label for="game-name">What are you playing?</label>
+        <input id="game-name" value={gameName} oninput={(e) => setName(e.currentTarget.value)} placeholder={def.customName.placeholder} maxlength="28" autocapitalize="words" autocomplete="off" />
+        {#if pastNames.length}
+          <div class="names">
+            {#each pastNames as n}<button class:on={n.toLowerCase() === gameName.trim().toLowerCase()} onclick={() => pickName(n)}>{n}</button>{/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
     {#if seats.length}
-      <div class="card lift seats" class:dragging={dragging !== null}>
+      <div class="card seats" class:lift={!def.customName} class:dragging={dragging !== null}>
         {#each seats as p, i (p.id)}
           <div class="lrow" class:lifted={dragging === i} style:transform={dragging === i ? `translateY(${dy}px)` : ''}>
             <span class="seatno num">{i + 1}</span>
@@ -198,12 +241,20 @@
 
   <div class="dock">
     <button class="cta" disabled={seats.length < def.minPlayers || starting} onclick={start}>
-      {#if seats.length < def.minPlayers}Add at least {def.minPlayers} players{:else}Start game · {seats.length} players<Icon name="next" size={18} stroke={2.4} />{/if}
+      {#if seats.length < def.minPlayers}Add at least {def.minPlayers} {def.minPlayers === 1 ? 'player' : 'players'}{:else}Start game · {seats.length} {seats.length === 1 ? 'player' : 'players'}<Icon name="next" size={18} stroke={2.4} />{/if}
     </button>
   </div>
 </div>
 
 <style>
+  .gname { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .gname label { font: 700 13px var(--f-ui); color: var(--p-muted); padding: 0 2px; }
+  .gname input { height: 52px; border: 0; border-radius: 14px; padding: 0 14px; background: var(--p-track); font: 700 19px var(--f-ui); color: var(--p-fg); outline: none; }
+  .gname input:focus { background: var(--p-surface); box-shadow: 0 0 0 2px var(--p-accent); }
+  .gname input::placeholder { font-weight: 500; color: var(--p-muted); }
+  .names { display: flex; flex-wrap: wrap; gap: 6px; }
+  .names button { padding: 6px 12px; border-radius: 999px; background: var(--p-track); font: 700 13.5px var(--f-ui); color: var(--p-fg); }
+  .names button.on { background: var(--p-accent); color: var(--p-on-cta); }
   .h { font: 800 32px var(--f-ui) !important; letter-spacing: -.02em; color: var(--p-hdr-fg); }
   .seats .lrow { padding: 8px 6px 8px 14px; background: var(--p-surface); position: relative; transition: box-shadow .15s; }
   .seats .lrow:first-child { border-radius: 22px 22px 0 0; }
