@@ -287,6 +287,21 @@ await page.getByRole('button', { name: 'New game' }).click();
 await page.waitForSelector('.quick');
 await expect(!(await page.locator('.quick').innerText()).includes('Sam'), 'forgotten player is no longer suggested');
 
+// ---------- long-press an in-progress game on home ----------
+await page.goto(base + '#/');
+const card = page.locator('.resume', { hasText: 'Bank in progress' });
+await card.waitFor();
+const box = await card.boundingBox();
+await page.mouse.move(box.x + 60, box.y + 30);
+await page.mouse.down();
+await page.waitForTimeout(700);
+await page.mouse.up();
+await page.locator('.bsheet').getByRole('button', { name: 'Delete game' }).click();
+await shot('18-home-delete');
+await page.locator('.bsheet').getByRole('button', { name: 'Delete', exact: true }).click();
+await page.waitForTimeout(400);
+await expect((await page.locator('.resume', { hasText: 'Bank in progress' }).count()) === 0, 'long-press deletes a game in progress from home');
+
 // ---------- offline ----------
 await page.goto(base + '#/');
 await page.waitForTimeout(1500);

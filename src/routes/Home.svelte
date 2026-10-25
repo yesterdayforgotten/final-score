@@ -8,7 +8,8 @@
   import ThemeButton from '../components/ThemeButton.svelte';
   import { GAMES, gameById } from '../games/registry';
   import type { Game, Player } from '../games/types';
-  import { activeGames, getPlayers, getRounds, listGames } from '../lib/db';
+  import { activeGames, deleteGame, getPlayers, getRounds, listGames } from '../lib/db';
+  import { longpress } from '../lib/longpress';
   import { completedRounds, leaders, totals } from '../lib/engine';
   import { fmtShort, fmtTime, plural } from '../lib/format';
   import { go } from '../lib/router.svelte';
@@ -23,8 +24,23 @@
 
   const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(Date.now());
 
+  let picked = $state<Resume | null>(null);
+  let confirmDelete = $state(false);
+
+  async function removePicked() {
+    if (!picked) return;
+    await deleteGame(picked.game.id);
+    picked = null;
+    confirmDelete = false;
+    await load();
+  }
+
   $effect(() => {
-    (async () => {
+    void load();
+  });
+
+  async function load() {
+    {
       const out: Resume[] = [];
       for (const g of await activeGames()) {
         const def = gameById(g.gameType);
@@ -42,8 +58,8 @@
         s[def.id] = { count: games.length, last: games[0]?.createdAt };
       }
       stats = s;
-    })();
-  });
+    }
+  }
 </script>
 
 <div class="screen t-base">
@@ -56,7 +72,7 @@
   <main class="content flat">
     {#each resumes as r (r.game.id)}
       {@const def = gameById(r.game.gameType)!}
-      <div class="card resume {def.theme}">
+      <div class="card resume {def.theme}" use:longpress={() => ((picked = r), (confirmDelete = false))} title="Long-press for options">
         <div class="top">
           {#if def.progress.kind === 'rounds'}
             <Ring done={r.done} total={def.progress.maxRounds(r.game.options)} />
@@ -80,6 +96,21 @@
       </button>
     {/each}
   </main>
+  <Sheet open={picked !== null} onclose={() => (picked = null)} label="Game in progress">
+    {#if picked}
+      {@const pdef = gameById(picked.game.gameType)!}
+      {#if confirmDelete}
+        <p class="q"><b>Delete this {pdef.name} game?</b>Its scores so far will be gone for good.</p>
+        <div class="row"><button class="cta soft" onclick={() => (confirmDelete = false)}>Cancel</button><button class="cta danger" onclick={removePicked}>Delete</button></div>
+      {:else}
+        <p class="q"><b>{pdef.name} in progress</b>{picked.players.map((p) => p.name).join(', ')} · started {fmtTime(picked.game.createdAt)}</p>
+        <div class="menu">
+          <button onclick={() => { const id = picked!.game.id; picked = null; go(`/play/${id}`); }}><Icon name="next" />Resume game</button>
+          <button class="bad" onclick={() => (confirmDelete = true)}><Icon name="trash" />Delete game</button>
+        </div>
+      {/if}
+    {/if}
+  </Sheet>
   <Sheet open={settings} onclose={() => (settings = false)} label="Settings">
     <h2 class="sh">Settings</h2>
     <Settings />
@@ -90,6 +121,13 @@
 
 <style>
   .rb { display: flex; gap: 8px; }
+  .q { margin: 4px 4px 0; font: 500 14.5px var(--f-ui); color: var(--p-muted); }
+  .q b { display: block; font: 800 18px var(--f-ui); color: var(--p-fg); margin-bottom: 4px; }
+  .row { display: flex; gap: 10px; }
+  .menu { display: flex; flex-direction: column; }
+  .menu button { display: flex; align-items: center; gap: 12px; padding: 14px 8px; font: 600 16px var(--f-ui); text-align: left; }
+  .menu button + button { border-top: 1px solid var(--p-hair); }
+  .menu .bad { color: var(--p-bad); }
   .mp { display: flex; align-items: center; gap: 10px; padding: 14px 6px; font: 700 15px var(--f-ui); border-top: 1px solid var(--p-hair); text-align: left; }
   .mp :global(svg:last-child) { margin-left: auto; color: var(--p-muted); }
   .sh { margin: 0 4px; font: 800 20px var(--f-ui); letter-spacing: -.01em; }
