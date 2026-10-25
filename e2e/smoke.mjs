@@ -367,6 +367,34 @@ await page.getByRole('button', { name: 'Finish game' }).click();
 await page.waitForSelector('text=Theo wins');
 await expect(true, 'beat the heat: lowest wins once someone reaches the end score');
 
+// ---------- arrange games ----------
+await page.goto(base + '#/');
+await page.getByRole('button', { name: 'Settings' }).click();
+await page.getByRole('button', { name: 'Arrange games' }).click();
+await page.waitForSelector('text=Drag to change the order');
+await page.getByRole('switch', { name: 'Show Skull King on the home screen' }).click();
+await page.getByRole('button', { name: 'Move Any game up' }).click();
+await shot('24-arrange');
+await page.getByRole('button', { name: 'Back' }).click();
+await page.waitForSelector('.gtile');
+const tiles = await page.locator('.gtile h2').allInnerTexts();
+await expect(!tiles.includes('Skull King'), 'hidden game leaves the home screen');
+await expect(tiles.indexOf('Any game') < tiles.indexOf('Beat the Heat'), `games can be reordered (${tiles.join(', ')})`);
+// Long-press a tile to hide it
+const bankTile = page.locator('.gtile', { hasText: 'Bank' });
+const bb = await bankTile.boundingBox();
+await page.mouse.move(bb.x + 40, bb.y + 30);
+await page.mouse.down();
+await page.waitForTimeout(700);
+await page.mouse.up();
+await page.locator('.bsheet').getByRole('button', { name: 'Hide from home' }).click();
+await page.waitForTimeout(300);
+await expect((await page.locator('.gtile', { hasText: 'Bank' }).count()) === 0, 'long-press a tile to hide it');
+// Put things back for the rest of the run
+await page.goto(base + '#/arrange');
+await page.getByRole('switch', { name: 'Show Skull King on the home screen' }).click();
+await page.getByRole('switch', { name: 'Show Bank on the home screen' }).click();
+
 // ---------- long-press an in-progress game on home ----------
 await page.goto(base + '#/');
 const card = page.locator('.resume', { hasText: 'Bank in progress' });

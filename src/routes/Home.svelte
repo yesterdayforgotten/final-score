@@ -10,6 +10,8 @@
   import type { Game, Player } from '../games/types';
   import { activeGames, deleteGame, getPlayers, getRounds, listGames } from '../lib/db';
   import { longpress } from '../lib/longpress';
+  import { gamePrefs, setHidden, visibleGames } from '../lib/gamePrefs.svelte';
+  import type { GameDefinition } from '../games/types';
   import { completedRounds, isLow, leaders, progressOf, titleOf, totals } from '../lib/engine';
   import { fmtShort, fmtTime, plural } from '../lib/format';
   import { go } from '../lib/router.svelte';
@@ -20,6 +22,8 @@
   interface Resume { game: Game; players: Player[]; done: number; leader?: string }
   let resumes = $state<Resume[]>([]);
   let settings = $state(false);
+  let tileMenu = $state<GameDefinition | null>(null);
+  const shown = $derived((void gamePrefs.order, void gamePrefs.hidden, visibleGames()));
   let stats = $state<Record<string, { count: number; last?: number }>>({});
 
   const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(Date.now());
@@ -87,9 +91,12 @@
       </div>
     {/each}
 
-    {#each GAMES as def (def.id)}
+    {#if !shown.length}
+      <div class="card empty"><b>All games are hidden</b><button class="pill pri" style="margin-top: 10px" onclick={() => go('/arrange')}>Arrange games</button></div>
+    {/if}
+    {#each shown as def (def.id)}
       {@const s = stats[def.id]}
-      <button class="gtile tile-{def.id}" onclick={() => go(`/g/${def.id}`)}>
+      <button class="gtile tile-{def.id}" use:longpress={() => (tileMenu = def)} onclick={() => go(`/g/${def.id}`)}>
         <span class="art"><def.Art /></span>
         <h2 style:font-family={def.titleFont}>{def.name}</h2>
         <span class="meta">{s?.count ? `${plural(s.count, 'game')} · last ${fmtShort(s.last!)}` : 'No games yet'}</span>
@@ -112,10 +119,20 @@
       {/if}
     {/if}
   </Sheet>
+  <Sheet open={tileMenu !== null} onclose={() => (tileMenu = null)} label="Game tile">
+    {#if tileMenu}
+      <p class="q"><b>{tileMenu.name}</b>Change what shows on the home screen.</p>
+      <div class="menu">
+        <button onclick={() => { setHidden(tileMenu!.id, true); tileMenu = null; }}><Icon name="x" />Hide from home</button>
+        <button onclick={() => { tileMenu = null; go('/arrange'); }}><Icon name="grid" />Arrange games</button>
+      </div>
+    {/if}
+  </Sheet>
   <Sheet open={settings} onclose={() => (settings = false)} label="Settings">
     <h2 class="sh">Settings</h2>
     <Settings />
     <button class="mp" onclick={() => { settings = false; go('/players'); }}><Icon name="edit" size={18} />Manage players<Icon name="next" size={18} /></button>
+    <button class="mp" onclick={() => { settings = false; go('/arrange'); }}><Icon name="grid" size={18} />Arrange games<Icon name="next" size={18} /></button>
     <button class="cta" style="flex: none" onclick={() => (settings = false)}>Done</button>
   </Sheet>
 </div>

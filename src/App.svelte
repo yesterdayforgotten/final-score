@@ -7,6 +7,7 @@
   import NewGame from './routes/NewGame.svelte';
   import Play from './routes/Play.svelte';
   import Players from './routes/Players.svelte';
+  import ArrangeGames from './routes/ArrangeGames.svelte';
 
   const [a, b, c] = $derived(route.path);
   const def = $derived(a === 'g' && b ? gameById(b) : undefined);
@@ -18,7 +19,9 @@
   });
 </script>
 
-{#if a === 'players'}
+{#if a === 'arrange'}
+  <ArrangeGames />
+{:else if a === 'players'}
   <Players />
 {:else if a === 'play' && b}
   {#key b}<Play id={b} />{/key}
