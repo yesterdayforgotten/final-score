@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { Player } from '../games/types';
-  import { initial } from '../lib/format';
+  import { initial, isEmoji } from '../lib/format';
 
   let { player, size = 36, ring = false }: { player: Pick<Player, 'name' | 'color'>; size?: number; ring?: boolean } = $props();
+  const ch = $derived(initial(player.name));
+  const emoji = $derived(isEmoji(ch));
 </script>
 
 <span
@@ -10,8 +12,9 @@
   class:ring
   style:width="{size}px"
   style:height="{size}px"
-  style:font-size="{Math.round(size * 0.39)}px"
-  aria-hidden="true">{initial(player.name)}</span>
+  class:emoji
+  style:font-size="{Math.round(size * (emoji ? 0.55 : 0.39))}px"
+  aria-hidden="true">{ch}</span>
 
 <style>
   .av {
@@ -19,6 +22,7 @@
     font-family: var(--f-ui); font-weight: 700; color: #fff; letter-spacing: -.02em; line-height: 1;
   }
   .ring { box-shadow: 0 0 0 2.5px var(--p-surface); }
+  .emoji { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; letter-spacing: 0; }
   .c0 { background: linear-gradient(140deg, #f08a6e, #de5a4c); }
   .c1 { background: linear-gradient(140deg, #6aa5ff, #3d6fe0); }
   .c2 { background: linear-gradient(140deg, #4fd09a, #23a06d); }
