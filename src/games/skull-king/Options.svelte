@@ -3,7 +3,7 @@
   import type { OptionsProps } from '../types';
   import { firstCards, lastCards, MAX_CARDS, roundCount, type SkOptions } from './rules';
 
-  let { options = $bindable() }: OptionsProps<SkOptions> = $props();
+  let { options = $bindable(), inGame }: OptionsProps<SkOptions> = $props();
 
   // Older games only had a round count; normalise to start/end.
   $effect.pre(() => {
@@ -15,9 +15,12 @@
   });
 
   const rounds = $derived(roundCount(options));
+  // Mid-game only the last round can move, and not below the cards dealt in the round being played.
+  const minLast = $derived(inGame ? firstCards(options) + inGame.currentRound - 1 : options.startCards);
 </script>
 
 <div class="card">
+  {#if !inGame}
   <div class="optrow">
     <span>Scoring<small>{options.scoring === 'classic' ? '20 per trick bid, −10 per trick off' : 'Points per card dealt; Cannonball option'}</small></span>
     <span class="mseg" role="radiogroup" aria-label="Scoring">
@@ -29,9 +32,10 @@
     <span>First round<small>{options.startCards === 1 ? '1 card each' : `${options.startCards} cards each`}</small></span>
     <Stepper value={options.startCards} min={1} max={options.endCards} label="cards in the first round" onchange={(v) => (options.startCards = v)} />
   </div>
+  {/if}
   <div class="optrow">
-    <span>Last round<small>{options.endCards} cards each · {rounds} {rounds === 1 ? 'round' : 'rounds'} in all</small></span>
-    <Stepper value={options.endCards} min={options.startCards} max={MAX_CARDS} label="cards in the last round" onchange={(v) => (options.endCards = v)} />
+    <span>Last round<small>{options.endCards} cards each · {inGame ? `playing round ${inGame.currentRound} of ${rounds}` : `${rounds} ${rounds === 1 ? 'round' : 'rounds'} in all`}</small></span>
+    <Stepper value={options.endCards} min={minLast} max={MAX_CARDS} label="cards in the last round" onchange={(v) => (options.endCards = v)} />
   </div>
 </div>
 

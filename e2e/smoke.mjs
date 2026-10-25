@@ -82,9 +82,18 @@ await page.waitForSelector('text=Round 3 of 10');
 const t2 = await page.locator('.tp .s').allInnerTexts();
 await expect(JSON.stringify(t2) === JSON.stringify(['10', '30', '80', '0']), `SK totals after editing round 1 ${t2}`);
 
+// Shorten the game mid-way: last round 4 cards
+await page.getByRole('button', { name: 'More', exact: true }).click();
+await page.getByRole('button', { name: 'Change number of rounds' }).click();
+for (let i = 0; i < 7; i++) await page.locator('.bsheet').getByRole('button', { name: 'Fewer cards in the last round' }).click();
+await expect(await page.locator('.bsheet').getByRole('button', { name: 'Fewer cards in the last round' }).isDisabled(), 'skull king last round cannot go below the current round');
+await page.locator('.bsheet').getByRole('button', { name: 'Done' }).click();
+await page.waitForSelector('text=Round 3 of 3');
+await expect(true, 'skull king last round changed mid-game');
+
 // End early -> result -> rematch
 await page.getByRole('button', { name: 'Scoreboard' }).click();
-await page.getByRole('button', { name: 'More' }).click();
+await page.getByRole('button', { name: 'More', exact: true }).click();
 await page.getByRole('button', { name: 'End game now' }).click();
 await page.getByRole('button', { name: 'End game', exact: true }).click();
 await page.waitForSelector('text=Final scores');
@@ -93,9 +102,10 @@ await shot('06-sk-result');
 await page.getByRole('button', { name: 'Rematch' }).click();
 await page.waitForSelector('.seats >> text=Priya');
 await expect((await page.locator('.seats .lrow').count()) === 4, 'rematch keeps 4 players');
+// Rematch keeps the shortened game (last round 3); stretch it to 3–9.
+for (let i = 0; i < 6; i++) await tap(page.getByRole('button', { name: 'More cards in the last round' }));
 await tap(page.getByRole('button', { name: 'More cards in the first round' }));
 await tap(page.getByRole('button', { name: 'More cards in the first round' }));
-await tap(page.getByRole('button', { name: 'Fewer cards in the last round' }));
 await expect((await text()).includes('9 cards each · 7 rounds in all'), 'skull king first/last card counts');
 await shot('07a-sk-options');
 await page.getByRole('button', { name: 'Cancel' }).click();
@@ -174,7 +184,7 @@ const bt = await page.locator('.tp .s').allInnerTexts();
 await expect(JSON.stringify(bt) === JSON.stringify(['81', '170']), `bank totals ${bt}`);
 await page.getByRole('button', { name: /Next round/ }).click();
 await page.waitForSelector('text=Round 2 of 10');
-await page.getByRole('button', { name: 'More' }).click();
+await page.getByRole('button', { name: 'More', exact: true }).click();
 await page.getByRole('button', { name: 'Change number of rounds' }).click();
 await page.locator('.bsheet').getByRole('button', { name: '15', exact: true }).click();
 await shot('13a-bank-rounds');

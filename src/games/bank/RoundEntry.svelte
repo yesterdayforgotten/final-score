@@ -37,7 +37,6 @@
   const nextRoll = $derived(st.count + 1);
   const banked = $derived(players.filter((p) => round.entries[p.id].banked !== null));
   const roller = $derived(over ? null : players[rollerSeat(round.index, entries, st.count)]);
-  const upNext = $derived(over ? null : players[rollerSeat(round.index, entries, st.count + 1)]);
 
   function changed() {
     onchange();
@@ -101,7 +100,6 @@
       <small>Roll {nextRoll}{safe ? ' · safe' : ''}</small>
       <b>{roller.name}'s roll</b>
     </div>
-    {#if upNext && upNext.id !== roller.id}<span class="nx">Next<br /><em>{upNext.name}</em></span>{/if}
   </div>
 {/if}
 
@@ -189,8 +187,6 @@
   .tw { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .tw small { font: 700 11.5px var(--f-ui); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
   .tw b { font: 800 22px var(--f-ui); letter-spacing: -.02em; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .nx { font: 600 11.5px var(--f-ui); text-align: right; opacity: .75; line-height: 1.25; flex: none; }
-  .nx em { font-style: normal; font-weight: 800; font-size: 14px; opacity: 1; }
   .pl.rolling { box-shadow: inset 0 0 0 2px var(--p-gold), var(--p-shadow); }
   .dice-tag { margin-left: 6px; font: 800 10px var(--f-ui); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; background: var(--p-gold-soft); color: var(--p-gold-text); vertical-align: 2px; }
   .key:disabled { opacity: .3; }
