@@ -68,6 +68,15 @@ await page.getByRole('button', { name: /Next round/ }).click();
 await page.waitForSelector('text=Round 3 of 10');
 await page.getByRole('radiogroup', { name: "Maya's bid" }).getByRole('radio', { name: '2', exact: true }).click();
 await shot('04-sk-bids-r3');
+// Light/dark switch from inside a game
+await page.getByRole('button', { name: 'More', exact: true }).click();
+await page.getByRole('radio', { name: 'Dark' }).click();
+await expect((await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark', 'switch to dark mode mid-game');
+await shot('04a-sk-dark-toggle');
+await page.getByRole('radio', { name: 'Auto' }).click();
+await expect((await page.evaluate(() => document.documentElement.dataset.theme)) === (process.env.SCHEME === 'dark' ? 'dark' : 'light'), 'auto follows the phone again');
+await page.keyboard.press('Escape');
+await page.waitForTimeout(300);
 
 // Scoreboard, edit round 1, back
 await page.getByRole('button', { name: 'Scoreboard' }).click();

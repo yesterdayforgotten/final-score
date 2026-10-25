@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Appearance from '../components/Appearance.svelte';
   import Avatar from '../components/Avatar.svelte';
   import Band from '../components/Band.svelte';
   import Icon from '../components/Icon.svelte';
@@ -245,6 +246,8 @@
         <p class="q"><b>Delete this game?</b>Its scores will be gone for good.</p>
         <div class="row"><button class="cta soft" onclick={() => (confirm = null)}>Cancel</button><button class="cta danger" onclick={remove}>Delete</button></div>
       {:else}
+        <div class="aplbl">Appearance</div>
+        <Appearance />
         <div class="menu">
           {#if !finished && def.midGameOptions}
             <button onclick={() => (confirm = 'settings')}><Icon name="edit" />{def.progress.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
@@ -277,6 +280,7 @@
   .pn { flex: 1; min-width: 0; font: 700 16px var(--f-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .total { font: 800 20px var(--f-ui); }
   .total.win { color: var(--p-gold-text); }
+  .aplbl { font: 700 12px var(--f-ui); color: var(--p-muted); letter-spacing: .04em; text-transform: uppercase; margin: 2px 4px -6px; }
   .menu { display: flex; flex-direction: column; }
   .menu button { display: flex; align-items: center; gap: 12px; padding: 14px 8px; font: 600 16px var(--f-ui); border-radius: 12px; text-align: left; }
   .menu button + button { border-top: 1px solid var(--p-hair); }

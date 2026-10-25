@@ -3,6 +3,7 @@
   import Band from '../components/Band.svelte';
   import Icon from '../components/Icon.svelte';
   import Ring from '../components/Ring.svelte';
+  import ThemeButton from '../components/ThemeButton.svelte';
   import type { Game, GameDefinition, Player } from '../games/types';
   import { getPlayers, getRounds, listGames } from '../lib/db';
   import { completedRounds, leaders, standings, totals } from '../lib/engine';
@@ -55,6 +56,7 @@
 <div class="screen {def.theme}">
   <Band onback={() => back('/')}>
     {#snippet art()}<def.Art />{/snippet}
+    {#snippet right()}<ThemeButton />{/snippet}
     {#snippet title()}<h1 style:font-family={def.titleFont} class="gt">{def.name}</h1>{/snippet}
     <p class="stat">
       {#if history.length}{plural(history.length, 'game')} played{#if topWinner} · {topWinner.name} has won {topWinner.wins}{/if}{:else}&nbsp;{/if}

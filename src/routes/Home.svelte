@@ -3,6 +3,7 @@
   import Band from '../components/Band.svelte';
   import Icon from '../components/Icon.svelte';
   import Ring from '../components/Ring.svelte';
+  import ThemeButton from '../components/ThemeButton.svelte';
   import { GAMES, gameById } from '../games/registry';
   import type { Game, Player } from '../games/types';
   import { activeGames, getPlayers, getRounds, listGames } from '../lib/db';
@@ -44,6 +45,7 @@
 
 <div class="screen t-base">
   <Band plain>
+    {#snippet right()}<ThemeButton />{/snippet}
     <div class="big"><small>{today}</small><h1>Final Score</h1></div>
   </Band>
   <main class="content flat">

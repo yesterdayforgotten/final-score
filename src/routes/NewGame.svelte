@@ -2,6 +2,7 @@
   import Avatar from '../components/Avatar.svelte';
   import Band from '../components/Band.svelte';
   import Icon from '../components/Icon.svelte';
+  import ThemeButton from '../components/ThemeButton.svelte';
   import type { GameDefinition, Player } from '../games/types';
   import { createGame, findOrCreatePlayer, getGame, getPlayers, nameKey, requestPersistence, suggestPlayers, type Suggestion } from '../lib/db';
   import { fmtShort } from '../lib/format';
@@ -122,6 +123,7 @@
 <div class="screen {def.theme}">
   <Band onback={() => back(`/g/${def.id}`)} backIcon="x" backLabel="Cancel" mid={def.name}>
     {#snippet art()}<def.Art />{/snippet}
+    {#snippet right()}<ThemeButton />{/snippet}
     {#snippet title()}<h1 class="h">New game</h1>{/snippet}
   </Band>
 

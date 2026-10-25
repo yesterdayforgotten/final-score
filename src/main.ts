@@ -5,6 +5,7 @@ import '@fontsource/alfa-slab-one';
 import './app.css';
 import { mount } from 'svelte';
 import App from './App.svelte';
+import './lib/appearance.svelte';
 import { route } from './lib/router.svelte';
 import { initUpdates } from './lib/update.svelte';
 
