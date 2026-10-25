@@ -169,6 +169,14 @@
   .tile-any h2 { font-weight: 800; letter-spacing: -.02em; }
   .tile-any .art { width: 130px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.3)); }
   .tile-any .art :global(svg) { width: 100%; height: auto; display: block; }
+  .tile-azul { background: radial-gradient(120% 100% at 85% 0%, #5b9cff 0%, #1f5fbf 50%, #0d2a5c 100%); color: #fff; }
+  .tile-azul h2 { font-family: var(--f-azul); font-size: 32px; letter-spacing: .06em; }
+  .tile-azul .art { width: 120px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.3)); }
+  .tile-azul .art :global(svg) { width: 100%; height: auto; display: block; }
+  .tile-beat-the-heat { background: radial-gradient(120% 100% at 85% 0%, #ffd34d 0%, #ff8a3d 40%, #d0301f 100%); color: #fff; }
+  .tile-beat-the-heat h2 { font-weight: 400; font-size: 26px; }
+  .tile-beat-the-heat .art { width: 140px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.25)); }
+  .tile-beat-the-heat .art :global(svg) { width: 100%; height: auto; display: block; }
   .tile-bank { background: radial-gradient(120% 100% at 85% 0%, #23966b 0%, #11573f 50%, #08291e 100%); color: #f6ecc9; }
   .tile-bank h2 { font-size: 32px; font-weight: 400; letter-spacing: .02em; }
   .tile-bank .art { width: 150px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }

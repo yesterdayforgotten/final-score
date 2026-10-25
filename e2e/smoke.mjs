@@ -318,6 +318,55 @@ await expect((await page.getByRole('radio', { name: 'Lowest score' }).getAttribu
 await page.waitForSelector('text=New Hearts game');
 await shot('19a-any-name');
 
+// ---------- Azul ----------
+await page.goto(base + '#/g/azul/new');
+await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
+await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('text=Tap the tiles each player placed');
+const azMaya = page.locator('.pc', { hasText: 'Maya' });
+const azTheo = page.locator('.pc', { hasText: 'Theo' });
+await tap(azMaya.getByRole('button', { name: 'Row 1, blue', exact: true }));
+await tap(azTheo.getByRole('radio', { name: 'Type a number' }));
+await azTheo.getByLabel("Theo's points").fill('5');
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.waitForSelector('text=Round 2');
+await tap(azMaya.getByRole('button', { name: 'Row 1, yellow', exact: true }));
+await expect((await azMaya.locator('.delta').innerText()) === '+2', 'azul counts linked tiles');
+await tap(azMaya.getByRole('radiogroup', { name: "Maya's floor tiles" }).getByRole('radio', { name: '2', exact: true }));
+await expect((await azMaya.locator('.delta').innerText()) === '0', 'azul floor penalty (2 tiles = −2)');
+await shot('22-azul-round');
+await azTheo.getByLabel("Theo's points").fill('3');
+await tap(azTheo.getByRole('switch', { name: 'Theo finished a row' }));
+await tap(azTheo.getByRole('button', { name: 'More full rows' }));
+await page.getByRole('button', { name: 'Finish game' }).click();
+await page.waitForSelector('text=Theo wins');
+await expect((await page.locator('.total').allInnerTexts()).join(',') === '10,1', 'azul totals with typed scores and bonuses');
+
+// ---------- Beat the Heat ----------
+await page.goto(base + '#/g/beat-the-heat/new');
+await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
+await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
+await tap(page.getByRole('button', { name: 'Lower ending score' }));
+await tap(page.getByRole('button', { name: 'Lower ending score' }));
+await tap(page.getByRole('button', { name: 'Lower ending score' }));
+await tap(page.getByRole('button', { name: 'Lower ending score' }));
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('text=ends at 22');
+await page.getByLabel("Maya's points").fill('10');
+await tap(page.getByRole('button', { name: "Count Theo's cards" }));
+await page.locator('.bsheet').getByRole('button', { name: 'More cards worth 1' }).click();
+await page.locator('.bsheet').getByRole('button', { name: 'More cards worth 1' }).click();
+await page.locator('.bsheet').getByRole('button', { name: 'More cards worth 7' }).click();
+await shot('23-heat-counter');
+await page.locator('.bsheet').getByRole('button', { name: 'Use 9' }).click();
+await page.getByRole('button', { name: /Next round/ }).click();
+await page.getByLabel("Maya's points").fill('13');
+await tap(page.getByRole('button', { name: 'Theo took nothing' }));
+await page.getByRole('button', { name: 'Finish game' }).click();
+await page.waitForSelector('text=Theo wins');
+await expect(true, 'beat the heat: lowest wins once someone reaches the end score');
+
 // ---------- long-press an in-progress game on home ----------
 await page.goto(base + '#/');
 const card = page.locator('.resume', { hasText: 'Bank in progress' });

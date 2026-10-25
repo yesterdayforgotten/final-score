@@ -3,6 +3,8 @@ import '@fontsource/pirata-one';
 import '@fontsource-variable/fredoka';
 import '@fontsource/alfa-slab-one';
 import '@fontsource/lilita-one';
+import '@fontsource/cinzel/700.css';
+import '@fontsource/bungee';
 import './app.css';
 import { mount } from 'svelte';
 import App from './App.svelte';

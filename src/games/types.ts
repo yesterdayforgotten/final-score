@@ -104,6 +104,13 @@ export interface GameDefinition<O = any, E = any> {
     | { kind: 'rounds'; maxRounds: (o: O) => number }
     | { kind: 'target'; target: (o: O) => number }
     | ((o: O) => Progress);
+  /** Running total after a round, when it isn't a plain sum (Azul: never below zero). */
+  accumulate?: (total: number, roundScore: number) => number;
+  /**
+   * Refresh values derived across rounds (Azul: wall points depend on earlier rounds). Called on load and
+   * before every save; mutate entries in place.
+   */
+  recompute?: (game: Game<O>, rounds: Round<E>[]) => void;
   /** Lowest total wins (golf-style games). */
   lowWins?: (o: O) => boolean;
   /** Name shown for a particular game, when players name it themselves. */

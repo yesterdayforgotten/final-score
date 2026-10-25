@@ -3,12 +3,13 @@ import type { Game, GameDefinition, Progress, Round } from '../games/types';
 /** Totals by player id, summing rounds with index < `before` (all rounds when omitted). */
 export function totals(def: GameDefinition, game: Game, rounds: Round[], before = Infinity): Record<string, number> {
   const t: Record<string, number> = Object.fromEntries(game.playerIds.map((id) => [id, 0]));
-  for (const r of rounds) {
+  for (const r of [...rounds].sort((a, b) => a.index - b.index)) {
     if (r.index >= before) continue;
     for (const id of game.playerIds) {
       const e = r.entries[id];
       if (e === undefined) continue;
-      t[id] += def.score(e, r.index, game.options) ?? 0;
+      const s = def.score(e, r.index, game.options) ?? 0;
+      t[id] = def.accumulate ? def.accumulate(t[id], s) : t[id] + s;
     }
   }
   return t;

@@ -85,6 +85,7 @@
       // Make sure every round has an entry for every player.
       for (const r of rs) for (const pid of g.playerIds) r.entries[pid] ??= d.emptyEntry();
       players = await getPlayers(g.playerIds);
+      d.recompute?.(g, rs);
       rounds = rs;
       game = g;
     })();
@@ -93,7 +94,11 @@
   function save() {
     const r = rounds[roundIdx];
     if (!r || !game) return;
-    void saveRound($state.snapshot(r) as Round);
+    if (def?.recompute) {
+      // Derived values can change in later rounds too; save them all.
+      def.recompute(game, rounds);
+      for (const x of rounds) if (x.index >= r.index) void saveRound($state.snapshot(x) as Round);
+    } else void saveRound($state.snapshot(r) as Round);
     if (finished) void refreshFinal();
   }
 
@@ -309,6 +314,8 @@
   .rbtns { display: flex; gap: 8px; flex: none; }
   .gt { font-size: 44px; color: var(--p-hdr-fg); }
   :global(.t-f7) .gt { font-weight: 700; font-size: 38px; }
+  :global(.t-azul) .gt { font-size: 36px; letter-spacing: .06em; }
+  :global(.t-heat) .gt { font-size: 28px; }
   :global(.t-any) .gt { font-weight: 800; font-size: 34px; letter-spacing: -.02em; }
   :global(.t-herd) .gt { font-size: 34px; }
   :global(.t-bank) .gt { font-size: 40px; letter-spacing: .02em; }
