@@ -95,6 +95,13 @@
     query = '';
   }
 
+  function moveSeat(i: number, by: number) {
+    const j = i + by;
+    if (j < 0 || j >= seats.length) return;
+    const [p] = seats.splice(i, 1);
+    seats.splice(j, 0, p);
+  }
+
   function remove(i: number) {
     seats.splice(i, 1);
   }
@@ -178,6 +185,10 @@
             <span class="seatno num">{i + 1}</span>
             <Avatar player={p} />
             <span class="nm">{p.name}</span>
+            <span class="mv">
+              <button aria-label="Move {p.name} up" disabled={i === 0} onclick={() => moveSeat(i, -1)}><Icon name="down" size={16} class="up" /></button>
+              <button aria-label="Move {p.name} down" disabled={i === seats.length - 1} onclick={() => moveSeat(i, 1)}><Icon name="down" size={16} /></button>
+            </span>
             <button class="x" aria-label="Remove {p.name}" onclick={() => remove(i)}><Icon name="x" size={18} /></button>
             <span
               class="grip"
@@ -264,6 +275,10 @@
   .nm { flex: 1; min-width: 0; font: 700 16px var(--f-ui); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nm small { display: block; font: 500 12.5px var(--f-ui); color: var(--p-muted); }
   .seatno { font: 700 12px var(--f-ui); color: var(--p-muted); width: 14px; text-align: center; flex: none; }
+  .mv { display: flex; flex: none; }
+  .mv button { width: 30px; height: 36px; display: grid; place-items: center; color: var(--p-muted); }
+  .mv button:disabled { opacity: .25; }
+  .mv :global(.up) { transform: rotate(180deg); }
   .x { width: 36px; height: 36px; display: grid; place-items: center; color: var(--p-muted); border-radius: 50%; flex: none; }
   .grip { width: 44px; height: 44px; display: grid; place-items: center; color: var(--p-muted); touch-action: none; cursor: grab; flex: none; }
   .search {

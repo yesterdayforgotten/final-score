@@ -22,7 +22,7 @@
   let players = $state<Player[]>([]);
   let missing = $state(false);
   let menu = $state(false);
-  let confirm = $state<'end' | 'delete' | 'settings' | 'rename' | null>(null);
+  let confirm = $state<'end' | 'delete' | 'settings' | 'rename' | 'seats' | null>(null);
   let renaming = $state<Player | null>(null);
   let newName = $state('');
   let renameError = $state('');
@@ -160,7 +160,17 @@
     back(`/play/${game.id}`);
   }
 
+  function moveSeat(i: number, by: number) {
+    if (!game) return;
+    const j = i + by;
+    if (j < 0 || j >= players.length) return;
+    const [p] = players.splice(i, 1);
+    players.splice(j, 0, p);
+    game.playerIds = players.map((x) => x.id);
+  }
+
   function closeMenu() {
+    if (confirm === 'seats' && game) void saveGame($state.snapshot(game) as Game);
     if (confirm === 'settings' && game) void saveGame($state.snapshot(game) as Game);
     menu = false;
     confirm = null;
@@ -267,7 +277,19 @@
     {/if}
 
     <Sheet open={menu} onclose={closeMenu} label="Game options">
-      {#if confirm === 'rename'}
+      {#if confirm === 'seats'}
+        <p class="q"><b>Seat order</b>Who sits where. The dealer and turn order follow this from the current round on.</p>
+        <div class="seats">
+          {#each players as p, i (p.id)}
+            <div class="seat">
+              <span class="sn num">{i + 1}</span><Avatar player={p} size={30} /><span class="pn">{p.name}</span>
+              <button aria-label="Move {p.name} up" disabled={i === 0} onclick={() => moveSeat(i, -1)}><Icon name="down" size={18} class="up" /></button>
+              <button aria-label="Move {p.name} down" disabled={i === players.length - 1} onclick={() => moveSeat(i, 1)}><Icon name="down" size={18} /></button>
+            </div>
+          {/each}
+        </div>
+        <button class="cta" style="flex: none" onclick={closeMenu}>Done</button>
+      {:else if confirm === 'rename'}
         {#if renaming}
           <form class="rn" onsubmit={saveRename}>
             <p class="q"><b>Rename {renaming.name}</b>The new name shows everywhere, including past games.</p>
@@ -300,6 +322,7 @@
             <button onclick={() => (confirm = 'settings')}><Icon name="grid" />{prog.kind === 'rounds' ? 'Change number of rounds' : 'Game settings'}</button>
           {/if}
           <button onclick={() => ((renaming = null), (confirm = 'rename'))}><Icon name="edit" />Rename a player</button>
+          {#if !finished}<button onclick={() => (confirm = 'seats')}><Icon name="repeat" />Change seat order</button>{/if}
           {#if !finished}
             <button onclick={() => (confirm = 'end')}><Icon name="flag" />End game now</button>
           {/if}
@@ -339,6 +362,14 @@
   .q { margin: 4px 4px 0; font: 500 14.5px var(--f-ui); color: var(--p-muted); }
   .q b { display: block; font: 800 18px var(--f-ui); color: var(--p-fg); margin-bottom: 4px; }
   .row { display: flex; gap: 10px; }
+  .seats { display: flex; flex-direction: column; background: var(--p-track); border-radius: 16px; padding: 4px 6px 4px 10px; }
+  .seat { display: flex; align-items: center; gap: 10px; min-height: 52px; }
+  .seat + .seat { border-top: 1px solid var(--p-hair-strong); }
+  .sn { width: 16px; text-align: center; font: 700 12px var(--f-ui); color: var(--p-muted); }
+  .seat .pn { flex: 1; font: 700 15.5px var(--f-ui); }
+  .seat button { width: 38px; height: 40px; display: grid; place-items: center; color: var(--p-muted); }
+  .seat button:disabled { opacity: .25; }
+  .seat :global(.up) { transform: rotate(180deg); }
   .rn { display: flex; flex-direction: column; gap: 14px; }
   .field { height: 52px; border-radius: 14px; border: 0; padding: 0 14px; font: 600 17px var(--f-ui); background: var(--p-track); color: var(--p-fg); outline: none; }
   .field:focus { box-shadow: 0 0 0 2px var(--p-accent); background: var(--p-surface); }
