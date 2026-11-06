@@ -52,7 +52,7 @@ for (const n of ['Maya', 'Theo', 'Jules', 'Priya']) {
 }
 await shot('02-sk-new');
 await page.getByRole('button', { name: /Start game/ }).click();
-await page.waitForSelector('text=Bids first');
+await page.waitForSelector('text=Bids total');
 
 async function skRound(bids, tricks, bonus) {
   for (const [name, b] of Object.entries(bids)) await tap(page.getByRole('radiogroup', { name: `${name}'s bid` }).getByRole('radio', { name: String(b), exact: true }));
@@ -68,6 +68,8 @@ for (const n of ['Theo', 'Jules', 'Priya'])
 await page.getByRole('button', { name: /Next round/ }).click();
 // Round 2 (2 cards): Jules bid 1 took 1 + Skull King taken by mermaid (+40) = 60
 await page.waitForSelector('text=Round 2 of 10');
+await expect((await page.locator('.pc .nm .t').allInnerTexts()).join(',') === 'Maya,Theo,Jules,Priya', 'skull king cards stay in seat order between rounds');
+await expect((await page.locator('.pc', { has: page.locator('.dealer') }).locator('.nm .t').innerText()) === 'Theo', 'dealer badge moves to the next seat');
 await skRound({ Maya: 1, Theo: 0, Jules: 1, Priya: 1 }, { Maya: 1, Theo: 0, Jules: 1, Priya: 0 }, async () => {
   await tap(page.locator('.pc', { hasText: 'Jules' }).getByRole('button', { name: /Bonuses/ }));
   await tap(page.getByRole('switch', { name: 'Skull King taken' }));

@@ -15,8 +15,7 @@
   const rascal = $derived(game.options.scoring === 'rascal');
   const phase = $derived(round.phase === 'tricks' ? 'tricks' : 'bids');
   const dealer = $derived(dealerSeat(round.index, players.length));
-  const order = $derived(players.map((_, i) => players[(dealer + 1 + i) % players.length]));
-  const entries = $derived(order.map((p) => round.entries[p.id]));
+  const entries = $derived(players.map((p) => round.entries[p.id]));
   const bidsDone = $derived(entries.every((e) => e.bid !== null));
   const tricksDone = $derived(entries.every((e) => e.tricks !== null));
   const bidSum = $derived(entries.reduce((a, e) => a + (e.bid ?? 0), 0));
@@ -60,16 +59,15 @@
     <span>Bids · {n} {n === 1 ? 'card' : 'cards'}</span>
     <span class:ok={bidsDone}>Bids total {bidSum} of {n}</span>
   </div>
-  {#each order as p, i (p.id)}
+  {#each players as p, i (p.id)}
     {@const e = round.entries[p.id]}
     <div class="card pc" class:lift={i === 0}>
       <div class="pc-h">
         <Avatar player={p} />
         <div class="who">
           <span class="nm"><span class="t">{p.name}</span>
-            {#if players.indexOf(p) === dealer}<span class="dealer"><Icon name="deal" size={12} stroke={2.4} />Dealer</span>{/if}
+            {#if i === dealer}<span class="dealer"><Icon name="deal" size={12} stroke={2.4} />Dealer</span>{/if}
           </span>
-          {#if i === 0}<span class="sub">Bids first</span>{/if}
         </div>
         <span class="val num" class:none={e.bid === null}>{e.bid ?? '–'}</span>
       </div>
@@ -96,7 +94,7 @@
       <span>{trickSum} of {n}</span>
     {/if}
   </div>
-  {#each order as p, i (p.id)}
+  {#each players as p, i (p.id)}
     {@const e = round.entries[p.id]}
     {@const pts = score(e, round.index, game.options)}
     {@const counts = bonusCounts(e, game.options)}
@@ -106,7 +104,7 @@
         <Avatar player={p} />
         <div class="who">
           <span class="nm"><span class="t">{p.name}</span>
-            {#if players.indexOf(p) === dealer}<span class="dealer"><Icon name="deal" size={12} stroke={2.4} />Dealer</span>{/if}
+            {#if i === dealer}<span class="dealer"><Icon name="deal" size={12} stroke={2.4} />Dealer</span>{/if}
           </span>
           <span class="sub">Bid {e.bid}{e.cannonball ? ' · Cannonball' : ''}{pts !== null && e.tricks !== e.bid ? (pts > 0 ? ' · off by one' : ' · missed') : ''}</span>
         </div>
