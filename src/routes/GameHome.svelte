@@ -115,6 +115,7 @@
   :global(.t-f7) .gt { font-weight: 700; font-size: 42px; }
   :global(.t-azul) .gt { font-size: 42px; letter-spacing: .06em; }
   :global(.t-heat) .gt { font-size: 34px; }
+  :global(.t-qwixx) .gt { font-weight: 800; font-size: 42px; letter-spacing: -.02em; }
   :global(.t-any) .gt { font-weight: 800; font-size: 40px; letter-spacing: -.02em; }
   :global(.t-herd) .gt { font-size: 40px; }
   :global(.t-bank) .gt { font-size: 46px; letter-spacing: .02em; }

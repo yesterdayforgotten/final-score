@@ -197,6 +197,27 @@ input { font: inherit; color: inherit; }
   --p-hdr-1: #7a2a14; --p-hdr-2: #3a0f07; --p-hdr-chip: rgba(255,255,255,.09); --p-hdr-chip-strong: rgba(255,255,255,.18); --p-hdr-lead: rgba(255,194,61,.16); --p-lead-ring: #ffc23d;
 }
 
+
+.t-qwixx {
+  --p-bg: #f3f4f7; --p-surface: #ffffff; --p-fg: #191b23; --p-muted: #666a78; --p-hair: #e7e8ee; --p-hair-strong: #cfd2db; --p-track: #eef0f4;
+  --p-accent: #2f6fd6; --p-accent-text: #2a62bf; --p-accent-soft: #e4ecfb; --p-gold: #f5c518; --p-gold-text: #9a7a00; --p-gold-soft: #fff5cf;
+  --p-good: #2fa25a; --p-good-soft: #e2f5e9; --p-bad: #e2433a; --p-bad-soft: #fde8e6;
+  --p-thumb: #2b2e3a; --p-on-thumb: #fff; --p-cta: #2b2e3a; --p-on-cta: #fff; --p-cta-shadow: rgba(43,46,58,.6); --p-zebra: #f8f9fb;
+  --p-shadow: 0 1px 2px rgba(20,22,30,.04), 0 4px 14px -6px rgba(20,22,30,.12);
+  --p-shadow-lift: 0 2px 4px rgba(20,22,30,.05), 0 16px 30px -12px rgba(20,22,30,.25);
+  --p-shadow-sm: 0 1px 3px rgba(20,22,30,.14);
+  --p-hdr-1: #3b3f50; --p-hdr-2: #1c1e27; --p-hdr-fg: #fff; --p-hdr-muted: rgba(255,255,255,.7); --p-hdr-chip: rgba(255,255,255,.1); --p-hdr-chip-strong: rgba(255,255,255,.2); --p-hdr-lead: rgba(245,197,24,.16);
+  --p-lead-ring: #f5c518;
+}
+:root[data-theme='dark'] .t-qwixx {
+  --p-bg: #0e0f13; --p-surface: #181a21; --p-fg: #eef0f5; --p-muted: #9498a6; --p-hair: #252831; --p-hair-strong: #363a46; --p-track: #20232b;
+  --p-accent: #6aa0ff; --p-accent-text: #86b2ff; --p-accent-soft: rgba(106,160,255,.15); --p-gold-soft: rgba(245,197,24,.16); --p-gold-text: #f5c518;
+  --p-good: #4fd394; --p-good-soft: rgba(79,211,148,.14); --p-bad: #ff7a6b; --p-bad-soft: rgba(255,122,107,.14);
+  --p-thumb: #eef0f5; --p-on-thumb: #0e0f13; --p-cta: #eef0f5; --p-on-cta: #0e0f13; --p-cta-shadow: rgba(0,0,0,.6); --p-zebra: #14161c;
+  --p-shadow: 0 0 0 1px rgba(255,255,255,.03); --p-shadow-lift: 0 0 0 1px rgba(255,255,255,.04), 0 16px 30px -14px rgba(0,0,0,.8); --p-shadow-sm: 0 1px 2px rgba(0,0,0,.5);
+  --p-hdr-1: #2a2d39; --p-hdr-2: #0f1015;
+}
+
 /* ============ screen layout ============ */
 .screen {
   height: 100dvh; display: flex; flex-direction: column; position: relative;

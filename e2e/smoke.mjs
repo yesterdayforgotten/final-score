@@ -379,6 +379,35 @@ await page.getByRole('button', { name: 'Finish game' }).click();
 await page.waitForSelector('text=Theo wins');
 await expect(true, 'beat the heat: lowest wins once someone reaches the end score');
 
+// ---------- Qwixx ----------
+await page.goto(base + '#/g/qwixx/new');
+await page.locator('.quick').getByRole('button', { name: /Maya/ }).click();
+await page.locator('.quick').getByRole('button', { name: /Theo/ }).click();
+await page.getByRole('button', { name: /Start game/ }).click();
+await page.waitForSelector('.qrow');
+await tap(page.getByRole('button', { name: 'red 2', exact: true }));
+await tap(page.getByRole('button', { name: 'red 4', exact: true }));
+await expect(await page.getByRole('button', { name: 'red 3', exact: true }).isDisabled(), 'qwixx: no crossing to the left of a cross');
+await expect(await page.getByRole('button', { name: 'red 12', exact: true }).isDisabled(), 'qwixx: last number needs five crosses');
+await tap(page.getByRole('button', { name: 'blue 12', exact: true }));
+await tap(page.getByRole('button', { name: 'Penalty 1' }));
+await expect((await page.locator('.sheet', { hasText: 'Maya' }).locator('.tot').innerText()) === '-1', 'qwixx scores rows and penalties (3 + 1 − 5)');
+await tap(page.getByRole('button', { name: 'Roll dice on screen' }));
+await tap(page.getByRole('button', { name: 'Roll the dice' }));
+await page.waitForTimeout(800);
+await shot('27-qwixx-sheet');
+await tap(page.locator('.sheet', { hasText: 'Theo' }).locator('.ph'));
+await tap(page.getByRole('radio', { name: 'Enter counts' }));
+for (let i = 0; i < 6; i++) await tap(page.getByRole('button', { name: 'More red crosses' }));
+for (let i = 0; i < 6; i++) await tap(page.getByRole('button', { name: 'More green crosses' }));
+await tap(page.getByRole('switch', { name: 'Theo locked red' }));
+await tap(page.getByRole('switch', { name: 'Theo locked green' }));
+await page.waitForSelector('text=two rows locked');
+await expect(true, 'qwixx: two locked rows end the game');
+await page.getByRole('button', { name: 'Finish game' }).click();
+await page.waitForSelector('text=Theo wins');
+await expect((await page.locator('.total').allInnerTexts()).join(',') === '56,-1', 'qwixx final totals (each locked row of 6 + lock = 28)');
+
 // ---------- arrange games ----------
 await page.goto(base + '#/');
 await page.getByRole('button', { name: 'Settings' }).click();

@@ -102,5 +102,6 @@
   .tile-herd { background: linear-gradient(140deg, #ffa3cb, #c2256f); }
   .tile-azul { background: linear-gradient(140deg, #5b9cff, #0d2a5c); }
   .tile-beat-the-heat { background: linear-gradient(140deg, #ffd34d, #d0301f); }
+  .tile-qwixx { background: linear-gradient(140deg, #4a4f63, #14151b); }
   .tile-any { background: linear-gradient(140deg, #7d8cff, #232c80); }
 </style>

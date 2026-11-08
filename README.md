@@ -1,6 +1,6 @@
 # Final Score
 
-An offline-first PWA for scoring board and card games on your phone. It currently supports **Skull King**, **Flip 7**, **Bank**, **Herd Mentality**, **Azul** and **Beat the Heat**, plus **Any game** for everything else.
+An offline-first PWA for scoring board and card games on your phone. It currently supports **Skull King**, **Flip 7**, **Bank**, **Herd Mentality**, **Azul**, **Beat the Heat** and **Qwixx**, plus **Any game** for everything else.
 
 - Choose a game to see past results, start a rematch with the same players, or start a new game. Names you've used before are suggested as you type.
 - Everything stays on the device in IndexedDB. There's no account, no server and no sync.
@@ -17,6 +17,7 @@ An offline-first PWA for scoring board and card games on your phone. It currentl
 | Any game | Name the game, then enter each player's score every round (negatives allowed). It can end when you say, after a set number of rounds, or when anyone reaches a target. Highest or lowest total wins. |
 | Azul | Tap each player's newly placed tiles on their wall: the app scores linked tiles, floor penalties (−1, −1, −2, −2, −2, −3, −3), spots a finished row to end the game, and adds end bonuses (+2 row, +7 column, +10 colour). Any player can switch to typing a number instead. Scores never go below zero. |
 | Beat the Heat | Penalty points per round, typed or counted by card value (1, 2, 3, 5, 7). Ends when anyone reaches 66; lowest total wins. |
+| Qwixx | A digital scoresheet per player (tap numbers left to right; lock after five crosses) or enter crosses per row. Rows score 1, 3, 6, 10…; −5 per penalty. Ends when two rows are locked or someone takes four penalties. Optional on-screen dice for all six. |
 | Flip 7 | Type the score, tap **Bust**, or count it with the card picker. The x2 card doubles the number cards. Seven different numbers add +15. The game ends after the round in which someone reaches the target (200 by default). |
 
 ## Adding a game

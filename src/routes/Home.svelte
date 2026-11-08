@@ -194,6 +194,10 @@
   .tile-beat-the-heat h2 { font-weight: 400; font-size: 26px; }
   .tile-beat-the-heat .art { width: 140px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.25)); }
   .tile-beat-the-heat .art :global(svg) { width: 100%; height: auto; display: block; }
+  .tile-qwixx { background: radial-gradient(120% 100% at 85% 0%, #4a4f63 0%, #2b2e3a 50%, #14151b 100%); color: #fff; }
+  .tile-qwixx h2 { font-weight: 800; font-size: 34px; letter-spacing: -.02em; }
+  .tile-qwixx .art { width: 140px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }
+  .tile-qwixx .art :global(svg) { width: 100%; height: auto; display: block; }
   .tile-bank { background: radial-gradient(120% 100% at 85% 0%, #23966b 0%, #11573f 50%, #08291e 100%); color: #f6ecc9; }
   .tile-bank h2 { font-size: 32px; font-weight: 400; letter-spacing: .02em; }
   .tile-bank .art { width: 150px; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); }
