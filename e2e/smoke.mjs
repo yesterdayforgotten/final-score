@@ -420,7 +420,7 @@ await page.getByRole('button', { name: 'Back' }).click();
 await page.waitForSelector('.gtile');
 const tiles = await page.locator('.gtile h2').allInnerTexts();
 await expect(!tiles.includes('Skull King'), 'hidden game leaves the home screen');
-await expect(tiles.indexOf('Any game') < tiles.indexOf('Beat the Heat'), `games can be reordered (${tiles.join(', ')})`);
+await expect(tiles.indexOf('Any game') < tiles.indexOf('Qwixx'), `games can be reordered (${tiles.join(', ')})`);
 // Long-press a tile to hide it
 const bankTile = page.locator('.gtile', { hasText: 'Bank' });
 const bb = await bankTile.boundingBox();
